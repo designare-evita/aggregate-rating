@@ -1,0 +1,326 @@
+/**
+ * Designare Feedback Ratings v2.0 - Admin Styles
+ * Clean & Modern
+ */
+
+/* === DASHBOARD === */
+.dfr-dashboard { max-width: 1200px; }
+.dfr-dashboard h1 { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+/* Stats Grid */
+.dfr-stats-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+    gap: 15px; 
+    margin-bottom: 25px; 
+}
+
+.dfr-stat-card { 
+    background: #fff; 
+    border: 1px solid #e0e0e0; 
+    padding: 20px; 
+    text-align: center; 
+}
+
+.dfr-stat-card .dfr-stat-value { 
+    font-size: 2rem; 
+    font-weight: 300; 
+    color: #1d2327; 
+    letter-spacing: -0.02em;
+}
+
+.dfr-stat-card .dfr-stat-label { 
+    color: #666; 
+    font-size: 0.8rem; 
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dfr-stat-card.dfr-positive .dfr-stat-value { color: #00a32a; }
+.dfr-stat-card.dfr-neutral .dfr-stat-value { color: #9a6700; }
+.dfr-stat-card.dfr-negative .dfr-stat-value { color: #d63638; }
+
+/* Charts Row */
+.dfr-charts-row { 
+    display: grid; 
+    grid-template-columns: 2fr 1fr; 
+    gap: 20px; 
+    margin-bottom: 25px; 
+}
+
+@media (max-width: 1024px) { 
+    .dfr-charts-row { grid-template-columns: 1fr; } 
+}
+
+.dfr-chart-card { 
+    background: #fff; 
+    border: 1px solid #e0e0e0; 
+    padding: 20px; 
+}
+
+.dfr-chart-card h2 { 
+    margin: 0 0 15px 0; 
+    font-size: 0.9rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+}
+
+.dfr-chart-container { 
+    position: relative; 
+    height: 280px; 
+}
+
+/* Top Posts Table */
+.dfr-top-posts { 
+    background: #fff; 
+    border: 1px solid #e0e0e0; 
+    padding: 20px; 
+}
+
+.dfr-top-posts h2 { 
+    margin: 0 0 15px 0; 
+    font-size: 0.9rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+}
+
+.dfr-top-posts table { 
+    width: 100%; 
+    border-collapse: collapse; 
+}
+
+.dfr-top-posts th,
+.dfr-top-posts td { 
+    padding: 12px 10px; 
+    text-align: left; 
+    border-bottom: 1px solid #f0f0f0; 
+    font-size: 0.9rem;
+}
+
+.dfr-top-posts th { 
+    font-weight: 400; 
+    color: #666;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.dfr-top-posts tr:hover { 
+    background: #fafafa; 
+}
+
+.dfr-top-posts a {
+    color: #1d2327;
+    text-decoration: none;
+}
+
+.dfr-top-posts a:hover {
+    color: #2271b1;
+}
+
+.dfr-rating-badge { 
+    display: inline-block; 
+    padding: 3px 10px; 
+    font-size: 0.8rem; 
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.dfr-rating-badge.good { 
+    background: transparent; 
+    color: #00a32a; 
+    border: 1px solid #00a32a;
+}
+
+.dfr-rating-badge.ok { 
+    background: transparent; 
+    color: #9a6700; 
+    border: 1px solid #9a6700;
+}
+
+.dfr-rating-badge.bad { 
+    background: transparent; 
+    color: #d63638; 
+    border: 1px solid #d63638;
+}
+
+/* === SETTINGS === */
+.dfr-settings-wrap { max-width: 800px; }
+
+.dfr-card { 
+    background: #fff; 
+    border: 1px solid #e0e0e0; 
+    padding: 25px; 
+    margin-bottom: 20px; 
+}
+
+.dfr-card h2 { 
+    margin: 0 0 20px 0; 
+    padding-bottom: 15px; 
+    border-bottom: 1px solid #f0f0f0; 
+    font-size: 0.9rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+}
+
+.dfr-field { 
+    margin-bottom: 20px; 
+}
+
+.dfr-field > label { 
+    display: block; 
+    font-weight: 400; 
+    margin-bottom: 8px;
+    color: #1d2327;
+}
+
+.dfr-field input[type="number"],
+.dfr-field input[type="text"],
+.dfr-field input[type="email"] { 
+    width: 100%; 
+    max-width: 300px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+}
+
+.dfr-field input:focus {
+    border-color: #2271b1;
+    outline: none;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.dfr-field .description { 
+    color: #666; 
+    font-size: 0.85rem; 
+    margin-top: 6px; 
+}
+
+.dfr-checkbox-list { 
+    margin: 10px 0; 
+}
+
+.dfr-checkbox-list label { 
+    display: block; 
+    font-weight: normal; 
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+/* Color Fields */
+.dfr-color-row { 
+    display: flex; 
+    gap: 25px; 
+    flex-wrap: wrap; 
+    margin: 15px 0; 
+}
+
+.dfr-color-field { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+}
+
+.dfr-color-field label { 
+    font-size: 0.8rem; 
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dfr-color-field input[type="color"] { 
+    width: 50px; 
+    height: 30px; 
+    border: 1px solid #e0e0e0; 
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Style Options */
+.dfr-style-options { 
+    display: flex; 
+    gap: 10px; 
+    margin: 10px 0; 
+}
+
+.dfr-style-options label { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    cursor: pointer; 
+    padding: 10px 20px; 
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.dfr-style-options label:hover {
+    border-color: #2271b1;
+}
+
+.dfr-style-options input:checked + span { 
+    font-weight: 500; 
+}
+
+.dfr-style-options label:has(input:checked) { 
+    border-color: #2271b1; 
+    background: #f0f6fc; 
+}
+
+/* Shortcode Preview */
+.dfr-shortcode-preview { 
+    background: #1d2327; 
+    color: #fff; 
+    padding: 15px 20px; 
+    font-family: 'Courier New', monospace; 
+    font-size: 0.9rem;
+    margin: 10px 0;
+    letter-spacing: 0.02em;
+}
+
+.dfr-shortcode-preview code {
+    color: #72aee6;
+    background: none;
+}
+
+/* Info Box */
+.dfr-info-box { 
+    background: #f0f6fc; 
+    border-left: 3px solid #2271b1; 
+    padding: 15px 20px; 
+    margin: 15px 0; 
+}
+
+.dfr-info-box p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Meta Box */
+.dfr-meta-box ul { 
+    margin: 0; 
+    padding: 0; 
+    list-style: none; 
+}
+
+.dfr-meta-box li { 
+    padding: 8px 0; 
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.dfr-meta-box li:last-child {
+    border-bottom: none;
+}

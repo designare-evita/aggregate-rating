@@ -1,0 +1,31 @@
+/**
+ * Gutenberg Block Editor Styles
+ */
+.dfr-block-preview {
+    padding: 20px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    text-align: center;
+}
+.dfr-block-preview-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #1e1e1e;
+}
+.dfr-block-preview-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.dfr-block-preview-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #fff;
+    border: 1px solid #ddd;
+}
+.dfr-block-preview-btn.pos { border-color: #00a32a; color: #00a32a; }
+.dfr-block-preview-btn.neu { border-color: #dba617; color: #dba617; }
+.dfr-block-preview-btn.neg { border-color: #d63638; color: #d63638; }

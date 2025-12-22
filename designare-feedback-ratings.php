@@ -1,0 +1,487 @@
+<?php
+/**
+ * Plugin Name: Designare Feedback Ratings
+ * Plugin URI: https://designare.at
+ * Description: Sammelt Besucher-Feedback und generiert automatisch Schema.org AggregateRating für besseres SEO. Mit Gutenberg Block, E-Mail-Alerts und Dashboard-Statistiken.
+ * Version: 2.0.0
+ * Author: Michael Kanda
+ * Author URI: https://designare.at
+ * License: GPL v2 or later
+ * Text Domain: designare-feedback
+ * Requires at least: 5.8
+ * Requires PHP: 7.4
+ */
+
+if (!defined('ABSPATH')) exit;
+
+define('DFR_VERSION', '2.0.0');
+define('DFR_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('DFR_PLUGIN_URL', plugin_dir_url(__FILE__));
+
+class Designare_Feedback_Ratings {
+
+    private static $instance = null;
+    const META_KEY = '_dfr_ratings';
+    const CACHE_PREFIX = 'dfr_cache_';
+    const CACHE_DURATION = 3600;
+
+    public static function get_instance() {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    private function __construct() {
+        register_activation_hook(__FILE__, [$this, 'activate']);
+        register_deactivation_hook(__FILE__, [$this, 'deactivate']);
+
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
+        add_action('wp_head', [$this, 'inject_schema_json_ld'], 5);
+        add_action('wp_head', [$this, 'inject_custom_styles'], 20);
+        add_shortcode('feedback_rating', [$this, 'render_feedback_widget']);
+        add_filter('the_content', [$this, 'auto_append_widget']);
+
+        add_action('init', [$this, 'register_gutenberg_block']);
+        add_action('enqueue_block_editor_assets', [$this, 'enqueue_block_editor_assets']);
+
+        add_action('wp_ajax_dfr_submit_vote', [$this, 'handle_vote']);
+        add_action('wp_ajax_nopriv_dfr_submit_vote', [$this, 'handle_vote']);
+        add_action('wp_ajax_dfr_get_stats', [$this, 'handle_get_stats']);
+        add_action('wp_ajax_nopriv_dfr_get_stats', [$this, 'handle_get_stats']);
+
+        if (is_admin()) {
+            add_action('admin_menu', [$this, 'add_admin_menu']);
+            add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
+            add_action('add_meta_boxes', [$this, 'add_meta_box']);
+        }
+
+        add_action('rest_api_init', [$this, 'register_rest_routes']);
+    }
+
+    public function activate() {
+        $default_options = [
+            'auto_append' => true,
+            'post_types' => ['post'],
+            'show_stats_bar' => true,
+            'enable_schema' => true,
+            'rate_limit_minutes' => 60,
+            'email_alerts' => false,
+            'alert_email' => get_option('admin_email'),
+            'primary_color' => '#FCB500',
+            'positive_color' => '#51cf66',
+            'neutral_color' => '#FCB500',
+            'negative_color' => '#ff6b6b',
+            'border_radius' => '10',
+            'button_style' => 'default',
+        ];
+        
+        if (!get_option('dfr_options')) {
+            add_option('dfr_options', $default_options);
+        } else {
+            $existing = get_option('dfr_options');
+            update_option('dfr_options', array_merge($default_options, $existing));
+        }
+        flush_rewrite_rules();
+    }
+
+    public function deactivate() {
+        global $wpdb;
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            '_transient_' . self::CACHE_PREFIX . '%'
+        ));
+        flush_rewrite_rules();
+    }
+
+    public function register_gutenberg_block() {
+        if (!function_exists('register_block_type')) return;
+
+        register_block_type('dfr/feedback-rating', [
+            'editor_script' => 'dfr-block-editor',
+            'render_callback' => [$this, 'render_feedback_widget'],
+            'attributes' => [
+                'showStats' => ['type' => 'boolean', 'default' => true],
+                'showShare' => ['type' => 'boolean', 'default' => true],
+            ]
+        ]);
+    }
+
+    public function enqueue_block_editor_assets() {
+        wp_enqueue_script('dfr-block-editor', DFR_PLUGIN_URL . 'assets/js/block-editor.js', ['wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components'], DFR_VERSION, true);
+        wp_enqueue_style('dfr-block-editor', DFR_PLUGIN_URL . 'assets/css/block-editor.css', [], DFR_VERSION);
+    }
+
+    public function enqueue_frontend_assets() {
+        if (!$this->should_load_on_current_page()) return;
+
+        wp_enqueue_style('dfr-frontend', DFR_PLUGIN_URL . 'assets/css/frontend.css', [], DFR_VERSION);
+        wp_enqueue_script('dfr-frontend', DFR_PLUGIN_URL . 'assets/js/frontend.js', ['jquery'], DFR_VERSION, true);
+
+        wp_localize_script('dfr-frontend', 'dfrConfig', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('dfr_vote_nonce'),
+            'postId' => get_the_ID(),
+            'strings' => [
+                'saving' => __('Wird gespeichert...', 'designare-feedback'),
+                'thanks' => __('Danke für dein Feedback!', 'designare-feedback'),
+                'already_voted' => __('Du hast bereits abgestimmt.', 'designare-feedback'),
+                'error' => __('Fehler beim Speichern.', 'designare-feedback'),
+                'helpful' => __('hilfreich', 'designare-feedback'),
+                'votes' => __('Bewertungen', 'designare-feedback'),
+            ]
+        ]);
+    }
+
+    public function inject_custom_styles() {
+        if (!$this->should_load_on_current_page()) return;
+        
+        $options = get_option('dfr_options', []);
+        $primary = $options['primary_color'] ?? '#FCB500';
+        $positive = $options['positive_color'] ?? '#51cf66';
+        $neutral = $options['neutral_color'] ?? '#FCB500';
+        $negative = $options['negative_color'] ?? '#ff6b6b';
+        $radius = $options['border_radius'] ?? '10';
+        $style = $options['button_style'] ?? 'default';
+        
+        $btn_radius = $style === 'pill' ? '50px' : $radius . 'px';
+        
+        echo "<style>:root{--dfr-primary:{$primary};--dfr-positive:{$positive};--dfr-neutral:{$neutral};--dfr-negative:{$negative};--dfr-radius:{$radius}px;--dfr-btn-radius:{$btn_radius};}</style>\n";
+    }
+
+    private function should_load_on_current_page() {
+        if (!is_singular()) return false;
+        $options = get_option('dfr_options', []);
+        $post_types = $options['post_types'] ?? ['post'];
+        return in_array(get_post_type(), $post_types);
+    }
+
+    public function inject_schema_json_ld() {
+        if (!is_singular()) return;
+
+        $options = get_option('dfr_options', []);
+        if (empty($options['enable_schema'])) return;
+
+        $post_types = $options['post_types'] ?? ['post'];
+        if (!in_array(get_post_type(), $post_types)) return;
+
+        $post_id = get_the_ID();
+        $ratings = $this->get_ratings($post_id);
+        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+
+        if ($total === 0) return;
+
+        $score = ($ratings['positive'] * 5) + ($ratings['neutral'] * 3) + ($ratings['negative'] * 1);
+        $average = round($score / $total, 1);
+
+        $schema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Article',
+            'headline' => get_the_title(),
+            'url' => get_permalink(),
+            'datePublished' => get_the_date('c'),
+            'dateModified' => get_the_modified_date('c'),
+            'author' => ['@type' => 'Person', 'name' => get_the_author()],
+            'aggregateRating' => [
+                '@type' => 'AggregateRating',
+                'ratingValue' => (string) $average,
+                'bestRating' => '5',
+                'worstRating' => '1',
+                'ratingCount' => (string) $total,
+            ]
+        ];
+
+        $schema = apply_filters('dfr_schema_json_ld', $schema, $post_id, $ratings);
+
+        echo "\n<!-- Designare Feedback Ratings -->\n";
+        echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . '</script>' . "\n";
+    }
+
+    public function render_feedback_widget($atts = []) {
+        $atts = shortcode_atts([
+            'post_id' => get_the_ID(),
+            'show_stats' => true,
+            'showStats' => true,
+            'show_share' => true,
+            'showShare' => true,
+        ], $atts, 'feedback_rating');
+
+        $atts['show_stats'] = $atts['show_stats'] && $atts['showStats'];
+        $atts['show_share'] = $atts['show_share'] && $atts['showShare'];
+
+        $post_id = intval($atts['post_id']);
+        $ratings = $this->get_ratings($post_id);
+        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+
+        $percentages = [
+            'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
+            'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
+            'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
+        ];
+
+        $options = get_option('dfr_options', []);
+
+        ob_start();
+        include DFR_PLUGIN_DIR . 'templates/feedback-widget.php';
+        return ob_get_clean();
+    }
+
+    public function auto_append_widget($content) {
+        if (!is_singular() || !is_main_query() || !in_the_loop()) return $content;
+
+        $options = get_option('dfr_options', []);
+        if (empty($options['auto_append'])) return $content;
+
+        $post_types = $options['post_types'] ?? ['post'];
+        if (!in_array(get_post_type(), $post_types)) return $content;
+
+        return $content . $this->render_feedback_widget();
+    }
+
+    public function handle_vote() {
+        if (!check_ajax_referer('dfr_vote_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => 'Sicherheitscheck fehlgeschlagen.'], 403);
+        }
+
+        if ($this->is_rate_limited()) {
+            wp_send_json_error(['message' => 'Bitte warte etwas.'], 429);
+        }
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        $vote = isset($_POST['vote']) ? sanitize_text_field($_POST['vote']) : '';
+
+        if (!$post_id || !in_array($vote, ['positive', 'neutral', 'negative'])) {
+            wp_send_json_error(['message' => 'Ungültige Anfrage.'], 400);
+        }
+
+        if (!get_post($post_id)) {
+            wp_send_json_error(['message' => 'Beitrag nicht gefunden.'], 404);
+        }
+
+        $ratings = $this->get_ratings($post_id);
+        $ratings[$vote]++;
+        
+        update_post_meta($post_id, self::META_KEY, $ratings);
+        delete_transient(self::CACHE_PREFIX . $post_id);
+        $this->set_rate_limit();
+
+        if ($vote === 'negative') {
+            $this->maybe_send_alert_email($post_id, $ratings);
+        }
+
+        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+        $percentages = [
+            'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
+            'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
+            'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
+        ];
+
+        wp_send_json_success(['stats' => $ratings, 'total' => $total, 'percentages' => $percentages]);
+    }
+
+    public function handle_get_stats() {
+        $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
+        if (!$post_id) wp_send_json_error(['message' => 'Post ID fehlt.'], 400);
+
+        $ratings = $this->get_ratings($post_id);
+        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+
+        $percentages = [
+            'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
+            'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
+            'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
+        ];
+
+        wp_send_json_success(['stats' => $ratings, 'total' => $total, 'percentages' => $percentages]);
+    }
+
+    private function maybe_send_alert_email($post_id, $ratings) {
+        $options = get_option('dfr_options', []);
+        if (empty($options['email_alerts'])) return;
+        
+        $email = $options['alert_email'] ?? get_option('admin_email');
+        if (!is_email($email)) return;
+
+        $post = get_post($post_id);
+        $post_title = $post ? $post->post_title : "Post #$post_id";
+        $post_url = get_permalink($post_id);
+        
+        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+        $neg_percent = $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0;
+
+        $subject = sprintf('[%s] Negatives Feedback: %s', get_bloginfo('name'), $post_title);
+        
+        $message = "Hallo,\n\n";
+        $message .= "Ein Besucher hat negatives Feedback abgegeben:\n\n";
+        $message .= "Beitrag: $post_title\n";
+        $message .= "URL: $post_url\n\n";
+        $message .= "Statistiken:\n";
+        $message .= "Positiv: {$ratings['positive']} | Neutral: {$ratings['neutral']} | Negativ: {$ratings['negative']} ($neg_percent%)\n\n";
+        $message .= "-- Designare Feedback Ratings";
+
+        wp_mail($email, $subject, $message);
+    }
+
+    public function get_ratings($post_id) {
+        $cache_key = self::CACHE_PREFIX . $post_id;
+        $cached = get_transient($cache_key);
+        if ($cached !== false) return $cached;
+
+        $ratings = get_post_meta($post_id, self::META_KEY, true);
+        if (!is_array($ratings)) $ratings = ['positive' => 0, 'neutral' => 0, 'negative' => 0];
+        $ratings = wp_parse_args($ratings, ['positive' => 0, 'neutral' => 0, 'negative' => 0]);
+        set_transient($cache_key, $ratings, self::CACHE_DURATION);
+
+        return $ratings;
+    }
+
+    private function is_rate_limited() {
+        $options = get_option('dfr_options', []);
+        $limit_minutes = $options['rate_limit_minutes'] ?? 60;
+        if ($limit_minutes <= 0) return false;
+        return get_transient('dfr_ratelimit_' . $this->get_user_fingerprint()) !== false;
+    }
+
+    private function set_rate_limit() {
+        $options = get_option('dfr_options', []);
+        $limit_minutes = $options['rate_limit_minutes'] ?? 60;
+        if ($limit_minutes <= 0) return;
+        set_transient('dfr_ratelimit_' . $this->get_user_fingerprint(), time(), $limit_minutes * MINUTE_IN_SECONDS);
+    }
+
+    private function get_user_fingerprint() {
+        return md5(($_SERVER['REMOTE_ADDR'] ?? '') . ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+    }
+
+    public function add_admin_menu() {
+        add_menu_page(__('Feedback Ratings', 'designare-feedback'), __('Feedback', 'designare-feedback'), 'manage_options', 'dfr-dashboard', [$this, 'render_dashboard_page'], 'dashicons-star-filled', 30);
+        add_submenu_page('dfr-dashboard', __('Dashboard', 'designare-feedback'), __('Dashboard', 'designare-feedback'), 'manage_options', 'dfr-dashboard', [$this, 'render_dashboard_page']);
+        add_submenu_page('dfr-dashboard', __('Einstellungen', 'designare-feedback'), __('Einstellungen', 'designare-feedback'), 'manage_options', 'dfr-settings', [$this, 'render_settings_page']);
+    }
+
+    public function enqueue_admin_assets($hook) {
+        if ($hook === 'toplevel_page_dfr-dashboard') {
+            wp_enqueue_script('chart-js', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js', [], '4.4.1', true);
+            wp_enqueue_style('dfr-admin', DFR_PLUGIN_URL . 'assets/css/admin.css', [], DFR_VERSION);
+            wp_enqueue_script('dfr-admin', DFR_PLUGIN_URL . 'assets/js/admin.js', ['chart-js', 'jquery'], DFR_VERSION, true);
+            wp_localize_script('dfr-admin', 'dfrChartData', $this->get_chart_data());
+        }
+        if ($hook === 'feedback_page_dfr-settings' || $hook === 'post.php') {
+            wp_enqueue_style('dfr-admin', DFR_PLUGIN_URL . 'assets/css/admin.css', [], DFR_VERSION);
+        }
+    }
+
+    private function get_chart_data() {
+        global $wpdb;
+        $options = get_option('dfr_options', []);
+        $post_types = $options['post_types'] ?? ['post'];
+        $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
+        
+        $posts = $wpdb->get_results($wpdb->prepare(
+            "SELECT p.ID, p.post_title, pm.meta_value FROM {$wpdb->posts} p 
+             INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id 
+             WHERE pm.meta_key = %s AND p.post_type IN ($placeholders) AND p.post_status = 'publish'
+             ORDER BY p.post_date DESC LIMIT 50",
+            array_merge([self::META_KEY], $post_types)
+        ));
+
+        $labels = []; $positive = []; $neutral = []; $negative = []; $totals = [];
+        $all_pos = 0; $all_neu = 0; $all_neg = 0;
+
+        foreach ($posts as $post) {
+            $ratings = maybe_unserialize($post->meta_value);
+            if (!is_array($ratings)) continue;
+            $total = ($ratings['positive'] ?? 0) + ($ratings['neutral'] ?? 0) + ($ratings['negative'] ?? 0);
+            if ($total === 0) continue;
+
+            $all_pos += $ratings['positive'] ?? 0;
+            $all_neu += $ratings['neutral'] ?? 0;
+            $all_neg += $ratings['negative'] ?? 0;
+
+            $totals[] = ['id' => $post->ID, 'title' => $post->post_title, 'total' => $total, 'ratings' => $ratings];
+        }
+
+        usort($totals, fn($a, $b) => $b['total'] - $a['total']);
+        $top10 = array_slice($totals, 0, 10);
+
+        foreach ($top10 as $item) {
+            $labels[] = wp_trim_words($item['title'], 4, '...');
+            $positive[] = $item['ratings']['positive'] ?? 0;
+            $neutral[] = $item['ratings']['neutral'] ?? 0;
+            $negative[] = $item['ratings']['negative'] ?? 0;
+        }
+
+        $all_total = $all_pos + $all_neu + $all_neg;
+
+        return [
+            'labels' => $labels, 'positive' => $positive, 'neutral' => $neutral, 'negative' => $negative,
+            'topPosts' => $top10,
+            'summary' => [
+                'total' => $all_total, 'positive' => $all_pos, 'neutral' => $all_neu, 'negative' => $all_neg,
+                'avgRating' => $all_total > 0 ? round((($all_pos * 5) + ($all_neu * 3) + ($all_neg * 1)) / $all_total, 1) : 0,
+            ]
+        ];
+    }
+
+    public function add_meta_box() {
+        $options = get_option('dfr_options', []);
+        foreach (($options['post_types'] ?? ['post']) as $post_type) {
+            add_meta_box('dfr_ratings_box', 'Feedback Ratings', [$this, 'render_meta_box'], $post_type, 'side', 'default');
+        }
+    }
+
+    public function render_meta_box($post) {
+        $ratings = $this->get_ratings($post->ID);
+        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+        if ($total === 0) { echo '<p>Noch keine Bewertungen.</p>'; return; }
+        $average = round((($ratings['positive'] * 5) + ($ratings['neutral'] * 3) + ($ratings['negative'] * 1)) / $total, 1);
+        echo "<div class='dfr-meta-box'><p><strong>$average</strong> ⭐ ($total Bewertungen)</p>";
+        echo "<ul><li>👍 {$ratings['positive']}</li><li>😐 {$ratings['neutral']}</li><li>👎 {$ratings['negative']}</li></ul></div>";
+    }
+
+    public function render_dashboard_page() { include DFR_PLUGIN_DIR . 'templates/dashboard-page.php'; }
+
+    public function render_settings_page() {
+        if (isset($_POST['dfr_save_settings']) && check_admin_referer('dfr_settings_nonce')) {
+            $options = [
+                'auto_append' => isset($_POST['auto_append']),
+                'post_types' => isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : ['post'],
+                'show_stats_bar' => isset($_POST['show_stats_bar']),
+                'enable_schema' => isset($_POST['enable_schema']),
+                'rate_limit_minutes' => intval($_POST['rate_limit_minutes'] ?? 60),
+                'email_alerts' => isset($_POST['email_alerts']),
+                'alert_email' => sanitize_email($_POST['alert_email'] ?? ''),
+                'primary_color' => sanitize_hex_color($_POST['primary_color'] ?? '#FCB500'),
+                'positive_color' => sanitize_hex_color($_POST['positive_color'] ?? '#51cf66'),
+                'neutral_color' => sanitize_hex_color($_POST['neutral_color'] ?? '#FCB500'),
+                'negative_color' => sanitize_hex_color($_POST['negative_color'] ?? '#ff6b6b'),
+                'border_radius' => intval($_POST['border_radius'] ?? 10),
+                'button_style' => sanitize_text_field($_POST['button_style'] ?? 'default'),
+            ];
+            update_option('dfr_options', $options);
+            echo '<div class="notice notice-success"><p>Einstellungen gespeichert.</p></div>';
+        }
+        $options = get_option('dfr_options', []);
+        include DFR_PLUGIN_DIR . 'templates/settings-page.php';
+    }
+
+    public function register_rest_routes() {
+        register_rest_route('dfr/v1', '/ratings/(?P<id>\d+)', [
+            'methods' => 'GET', 'callback' => [$this, 'rest_get_ratings'], 'permission_callback' => '__return_true',
+        ]);
+    }
+
+    public function rest_get_ratings($request) {
+        $post_id = $request['id'];
+        $ratings = $this->get_ratings($post_id);
+        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+        if ($total === 0) return new WP_REST_Response(['success' => true, 'stats' => $ratings, 'total' => 0, 'aggregateRating' => null], 200);
+        $average = round((($ratings['positive'] * 5) + ($ratings['neutral'] * 3) + ($ratings['negative'] * 1)) / $total, 1);
+        return new WP_REST_Response([
+            'success' => true, 'stats' => $ratings, 'total' => $total,
+            'aggregateRating' => ['@type' => 'AggregateRating', 'ratingValue' => (string)$average, 'bestRating' => '5', 'worstRating' => '1', 'ratingCount' => (string)$total]
+        ], 200);
+    }
+}
+
+add_action('plugins_loaded', fn() => Designare_Feedback_Ratings::get_instance());
