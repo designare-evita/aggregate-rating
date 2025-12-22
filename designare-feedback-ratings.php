@@ -3,7 +3,7 @@
  * Plugin Name: Designare Feedback Ratings
  * Plugin URI: https://designare.at
  * Description: Sammelt Besucher-Feedback und generiert automatisch Schema.org AggregateRating für besseres SEO. Mit Gutenberg Block, E-Mail-Alerts und Dashboard-Statistiken.
- * Version: 2.0.0
+ * Version: 2.1.0
  * Author: Michael Kanda
  * Author URI: https://designare.at
  * License: GPL v2 or later
@@ -14,7 +14,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('DFR_VERSION', '2.0.0');
+define('DFR_VERSION', '2.1.0');
 define('DFR_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('DFR_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -74,6 +74,20 @@ class Designare_Feedback_Ratings {
             'negative_color' => '#ff6b6b',
             'border_radius' => '10',
             'button_style' => 'default',
+            // Texte & Lokalisierung
+            'custom_css' => '',
+            'text_title' => 'War dieser Artikel hilfreich?',
+            'text_pos' => 'Hilfreich',
+            'text_neu' => 'Neutral',
+            'text_neg' => 'Nicht hilfreich',
+            'text_saving' => 'Wird gespeichert...',
+            'text_thanks' => 'Danke für dein Feedback!',
+            'text_already_voted' => 'Du hast bereits abgestimmt.',
+            'text_error' => 'Fehler beim Speichern.',
+            'text_helpful_label' => 'hilfreich',
+            'text_votes_label' => 'Bewertungen',
+            'text_no_votes' => 'Noch keine Bewertungen',
+            'text_be_first' => 'Sei der Erste!',
         ];
         
         if (!get_option('dfr_options')) {
@@ -115,6 +129,8 @@ class Designare_Feedback_Ratings {
     public function enqueue_frontend_assets() {
         if (!$this->should_load_on_current_page()) return;
 
+        $options = get_option('dfr_options', []);
+
         wp_enqueue_style('dfr-frontend', DFR_PLUGIN_URL . 'assets/css/frontend.css', [], DFR_VERSION);
         wp_enqueue_script('dfr-frontend', DFR_PLUGIN_URL . 'assets/js/frontend.js', ['jquery'], DFR_VERSION, true);
 
@@ -123,12 +139,12 @@ class Designare_Feedback_Ratings {
             'nonce' => wp_create_nonce('dfr_vote_nonce'),
             'postId' => get_the_ID(),
             'strings' => [
-                'saving' => __('Wird gespeichert...', 'designare-feedback'),
-                'thanks' => __('Danke für dein Feedback!', 'designare-feedback'),
-                'already_voted' => __('Du hast bereits abgestimmt.', 'designare-feedback'),
-                'error' => __('Fehler beim Speichern.', 'designare-feedback'),
-                'helpful' => __('hilfreich', 'designare-feedback'),
-                'votes' => __('Bewertungen', 'designare-feedback'),
+                'saving' => $options['text_saving'] ?? __('Wird gespeichert...', 'designare-feedback'),
+                'thanks' => $options['text_thanks'] ?? __('Danke für dein Feedback!', 'designare-feedback'),
+                'already_voted' => $options['text_already_voted'] ?? __('Du hast bereits abgestimmt.', 'designare-feedback'),
+                'error' => $options['text_error'] ?? __('Fehler beim Speichern.', 'designare-feedback'),
+                'helpful' => $options['text_helpful_label'] ?? __('hilfreich', 'designare-feedback'),
+                'votes' => $options['text_votes_label'] ?? __('Bewertungen', 'designare-feedback'),
             ]
         ]);
     }
@@ -146,7 +162,14 @@ class Designare_Feedback_Ratings {
         
         $btn_radius = $style === 'pill' ? '50px' : $radius . 'px';
         
-        echo "<style>:root{--dfr-primary:{$primary};--dfr-positive:{$positive};--dfr-neutral:{$neutral};--dfr-negative:{$negative};--dfr-radius:{$radius}px;--dfr-btn-radius:{$btn_radius};}</style>\n";
+        echo "<style>\n:root{--dfr-primary:{$primary};--dfr-positive:{$positive};--dfr-neutral:{$neutral};--dfr-negative:{$negative};--dfr-radius:{$radius}px;--dfr-btn-radius:{$btn_radius};}\n";
+        
+        // Custom CSS hinzufügen
+        if (!empty($options['custom_css'])) {
+            echo wp_strip_all_tags($options['custom_css']) . "\n";
+        }
+        
+        echo "</style>\n";
     }
 
     private function should_load_on_current_page() {
@@ -239,10 +262,17 @@ class Designare_Feedback_Ratings {
     }
 
     public function handle_vote() {
+        // 1. HONEYPOT CHECK - Wenn ausgefüllt = Bot
+        if (!empty($_POST['hp_field'])) {
+            wp_send_json_error(['message' => 'Spam erkannt.'], 403);
+        }
+
+        // 2. Sicherheitscheck (Nonce)
         if (!check_ajax_referer('dfr_vote_nonce', 'nonce', false)) {
             wp_send_json_error(['message' => 'Sicherheitscheck fehlgeschlagen.'], 403);
         }
 
+        // 3. Rate Limiting
         if ($this->is_rate_limited()) {
             wp_send_json_error(['message' => 'Bitte warte etwas.'], 429);
         }
@@ -457,6 +487,20 @@ class Designare_Feedback_Ratings {
                 'negative_color' => sanitize_hex_color($_POST['negative_color'] ?? '#ff6b6b'),
                 'border_radius' => intval($_POST['border_radius'] ?? 10),
                 'button_style' => sanitize_text_field($_POST['button_style'] ?? 'default'),
+                // Texte & Lokalisierung
+                'custom_css' => wp_strip_all_tags($_POST['custom_css'] ?? ''),
+                'text_title' => sanitize_text_field($_POST['text_title'] ?? ''),
+                'text_pos' => sanitize_text_field($_POST['text_pos'] ?? ''),
+                'text_neu' => sanitize_text_field($_POST['text_neu'] ?? ''),
+                'text_neg' => sanitize_text_field($_POST['text_neg'] ?? ''),
+                'text_saving' => sanitize_text_field($_POST['text_saving'] ?? ''),
+                'text_thanks' => sanitize_text_field($_POST['text_thanks'] ?? ''),
+                'text_already_voted' => sanitize_text_field($_POST['text_already_voted'] ?? ''),
+                'text_error' => sanitize_text_field($_POST['text_error'] ?? ''),
+                'text_helpful_label' => sanitize_text_field($_POST['text_helpful_label'] ?? ''),
+                'text_votes_label' => sanitize_text_field($_POST['text_votes_label'] ?? ''),
+                'text_no_votes' => sanitize_text_field($_POST['text_no_votes'] ?? ''),
+                'text_be_first' => sanitize_text_field($_POST['text_be_first'] ?? ''),
             ];
             update_option('dfr_options', $options);
             echo '<div class="notice notice-success"><p>Einstellungen gespeichert.</p></div>';
