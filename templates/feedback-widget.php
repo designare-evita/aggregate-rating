@@ -6,44 +6,53 @@ $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
 ?>
 <aside class="dfr-feedback-section" data-post-id="<?php echo esc_attr($post_id); ?>">
     <div class="dfr-feedback-container">
-        <p class="dfr-feedback-title">War dieser Artikel hilfreich?</p>
+        <p class="dfr-feedback-title"><?php echo esc_html($options['text_title'] ?? 'War dieser Artikel hilfreich?'); ?></p>
+        
+        <!-- HONEYPOT FIELD - Versteckt vor Menschen, sichtbar für Bots -->
+        <div class="dfr-hp-wrap" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+            <label for="dfr_honeypot_field">Bitte nicht ausfüllen</label>
+            <input type="text" name="dfr_honeypot_field" id="dfr_honeypot_field" value="" tabindex="-1" autocomplete="off">
+        </div>
+        
         <div class="dfr-rating-buttons">
             <button class="dfr-rating-btn dfr-positive" type="button">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 19V5M5 12l7-7 7 7"/>
                 </svg>
-                Hilfreich
+                <?php echo esc_html($options['text_pos'] ?? 'Hilfreich'); ?>
             </button>
             <button class="dfr-rating-btn dfr-neutral" type="button">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M5 12h14"/>
                 </svg>
-                Neutral
+                <?php echo esc_html($options['text_neu'] ?? 'Neutral'); ?>
             </button>
             <button class="dfr-rating-btn dfr-negative" type="button">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 5v14M5 12l7 7 7-7"/>
                 </svg>
-                Nicht hilfreich
+                <?php echo esc_html($options['text_neg'] ?? 'Nicht hilfreich'); ?>
             </button>
         </div>
+        
         <?php if ($show_stats && !empty($options['show_stats_bar'])) : ?>
         <div class="dfr-ratio-bar">
             <div class="dfr-ratio-segment dfr-pos" style="width: <?php echo esc_attr($percentages['positive']); ?>%;"></div>
             <div class="dfr-ratio-segment dfr-neu" style="width: <?php echo esc_attr($percentages['neutral']); ?>%;"></div>
-            <div class="dfr-ratio-segment dfr-neg" style="width: <?php echo esc_attr($percentages['negative']); ?>%;"></div>
+            <div class="dfr-ratio-segment dfr-neg" style="width: <?php echo esc_attr($percentages['negative']); %>%;"></div>
         </div>
         <div class="dfr-rating-labels">
             <?php if ($total > 0) : ?>
-                <span><?php echo esc_html($percentages['positive']); ?>% hilfreich</span>
-                <span><?php echo esc_html($total); ?> Bewertungen</span>
+                <span><?php echo esc_html($percentages['positive']); ?>% <?php echo esc_html($options['text_helpful_label'] ?? 'hilfreich'); ?></span>
+                <span><?php echo esc_html($total); ?> <?php echo esc_html($options['text_votes_label'] ?? 'Bewertungen'); ?></span>
             <?php else : ?>
-                <span>Noch keine Bewertungen</span>
-                <span>Sei der Erste!</span>
+                <span><?php echo esc_html($options['text_no_votes'] ?? 'Noch keine Bewertungen'); ?></span>
+                <span><?php echo esc_html($options['text_be_first'] ?? 'Sei der Erste!'); ?></span>
             <?php endif; ?>
         </div>
         <?php endif; ?>
     </div>
+    
     <?php if ($show_share) : ?>
     <div class="dfr-share-container">
         <span class="dfr-share-label">Teilen</span>
