@@ -56,7 +56,11 @@ $selected_types = $options['post_types'] ?? ['post'];
             <div class="dfr-field">
                 <label>Rate Limit (Minuten)</label>
                 <input type="number" name="rate_limit_minutes" value="<?php echo esc_attr($options['rate_limit_minutes'] ?? 60); ?>" min="0" max="1440" style="width:80px">
-                <p class="description">Wartezeit zwischen Abstimmungen. 0 = deaktiviert.</p>
+                <p class="description">Wartezeit zwischen Abstimmungen. 0 = deaktiviert. <strong>Honeypot-Schutz ist immer aktiv.</strong></p>
+            </div>
+            <div class="dfr-info-box">
+                <p><strong>🛡️ Automatischer Spam-Schutz aktiv</strong><br>
+                Das Plugin nutzt ein unsichtbares Honeypot-Feld, das Bots automatisch ausfüllen, während echte Besucher es nicht sehen. Spam-Votes werden automatisch blockiert.</p>
             </div>
         </div>
 
@@ -95,6 +99,102 @@ $selected_types = $options['post_types'] ?? ['post'];
         </div>
 
         <div class="dfr-card">
+            <h2>Texte & Lokalisierung</h2>
+            <p class="description" style="margin:0 0 20px;color:#666;">Passe alle Texte an deine Sprache und Zielgruppe an.</p>
+            
+            <div class="dfr-field">
+                <label>Widget-Titel</label>
+                <input type="text" name="text_title" value="<?php echo esc_attr($options['text_title'] ?? 'War dieser Artikel hilfreich?'); ?>" style="width:100%;max-width:500px">
+                <p class="description">Standard: "War dieser Artikel hilfreich?"</p>
+            </div>
+            
+            <div class="dfr-field">
+                <label>Button-Texte</label>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:10px;">
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Positiv</label>
+                        <input type="text" name="text_pos" value="<?php echo esc_attr($options['text_pos'] ?? 'Hilfreich'); ?>" style="width:100%">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Neutral</label>
+                        <input type="text" name="text_neu" value="<?php echo esc_attr($options['text_neu'] ?? 'Neutral'); ?>" style="width:100%">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Negativ</label>
+                        <input type="text" name="text_neg" value="<?php echo esc_attr($options['text_neg'] ?? 'Nicht hilfreich'); ?>" style="width:100%">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dfr-field">
+                <label>Feedback-Meldungen</label>
+                <div style="display:grid;gap:10px;margin-top:10px;">
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Während Speicherung</label>
+                        <input type="text" name="text_saving" value="<?php echo esc_attr($options['text_saving'] ?? 'Wird gespeichert...'); ?>" style="width:100%;max-width:500px">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Erfolgsmeldung (Danke)</label>
+                        <input type="text" name="text_thanks" value="<?php echo esc_attr($options['text_thanks'] ?? 'Danke für dein Feedback!'); ?>" style="width:100%;max-width:500px">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Bereits abgestimmt</label>
+                        <input type="text" name="text_already_voted" value="<?php echo esc_attr($options['text_already_voted'] ?? 'Du hast bereits abgestimmt.'); ?>" style="width:100%;max-width:500px">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Fehlermeldung</label>
+                        <input type="text" name="text_error" value="<?php echo esc_attr($options['text_error'] ?? 'Fehler beim Speichern.'); ?>" style="width:100%;max-width:500px">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dfr-field">
+                <label>Statistik-Labels</label>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:10px;">
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Label: % hilfreich</label>
+                        <input type="text" name="text_helpful_label" value="<?php echo esc_attr($options['text_helpful_label'] ?? 'hilfreich'); ?>" style="width:100%">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Label: Bewertungen</label>
+                        <input type="text" name="text_votes_label" value="<?php echo esc_attr($options['text_votes_label'] ?? 'Bewertungen'); ?>" style="width:100%">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Keine Bewertungen</label>
+                        <input type="text" name="text_no_votes" value="<?php echo esc_attr($options['text_no_votes'] ?? 'Noch keine Bewertungen'); ?>" style="width:100%">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Sei der Erste</label>
+                        <input type="text" name="text_be_first" value="<?php echo esc_attr($options['text_be_first'] ?? 'Sei der Erste!'); ?>" style="width:100%">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dfr-card">
+            <h2>Individuelles CSS</h2>
+            <div class="dfr-field">
+                <label>Custom CSS</label>
+                <textarea name="custom_css" rows="10" style="width:100%;font-family:monospace;font-size:13px;background:#1e1e1e;color:#d4d4d4;padding:15px;border:1px solid #333;border-radius:4px;"><?php echo esc_textarea($options['custom_css'] ?? ''); ?></textarea>
+                <p class="description">Hier kannst du eigenes CSS einfügen, um das Widget perfekt an dein Theme anzupassen. Nutze CSS-Variablen wie <code>var(--dfr-primary)</code> für konsistente Farben.</p>
+            </div>
+            <div class="dfr-info-box">
+                <p><strong>💡 Beispiel-CSS:</strong></p>
+                <pre style="background:#1e1e1e;color:#d4d4d4;padding:15px;overflow-x:auto;font-size:12px;border-radius:4px;margin:10px 0 0;">.dfr-feedback-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.dfr-rating-btn {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}</pre>
+            </div>
+        </div>
+
+        <div class="dfr-card">
             <h2>Verwendung</h2>
             <p style="margin:0 0 10px;color:#666;font-size:0.9rem;">Shortcode:</p>
             <div class="dfr-shortcode-preview">[feedback_rating]</div>
@@ -104,7 +204,7 @@ $selected_types = $options['post_types'] ?? ['post'];
         </div>
 
         <p class="submit">
-            <button type="submit" name="dfr_save_settings" class="button button-primary">Speichern</button>
+            <button type="submit" name="dfr_save_settings" class="button button-primary">Einstellungen speichern</button>
         </p>
     </form>
 </div>
