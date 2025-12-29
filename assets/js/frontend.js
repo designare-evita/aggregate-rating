@@ -11,10 +11,22 @@
         if (!postId) return;
 
         var existingVote = localStorage.getItem(LOCAL_STORAGE_KEY + postId);
-        if (existingVote) markVotedState($widget, existingVote);
+        if (existingVote) {
+            if ($widget.hasClass('dfr-stars-theme')) {
+                markStarVoted($widget, existingVote);
+            } else {
+                markVotedState($widget, existingVote);
+            }
+        }
 
         loadStats($widget, postId);
-        initRatingButtons($widget, postId);
+        
+        if ($widget.hasClass('dfr-stars-theme')) {
+            initStarRating($widget, postId);
+        } else {
+            initRatingButtons($widget, postId);
+        }
+        
         initShareButtons($widget);
     });
 
@@ -22,7 +34,15 @@
         $.ajax({
             url: config.ajaxUrl, type: 'GET',
             data: { action: 'dfr_get_stats', post_id: postId },
-            success: function(r) { if (r.success) updateRatioBar($widget, r.data.percentages, r.data.total); }
+            success: function(r) { 
+                if (r.success) {
+                    if ($widget.hasClass('dfr-stars-theme')) {
+                        updateStarsDisplay($widget, r.data.percentages, r.data.total);
+                    } else {
+                        updateRatioBar($widget, r.data.percentages, r.data.total);
+                    }
+                }
+            }
         });
     }
 
@@ -36,12 +56,22 @@
         }
     }
 
+    function updateStarsDisplay($widget, pct, total) {
+        $widget.find('.dfr-dist-fill').each(function(i) {
+            var w = i === 0 ? pct.positive : (i === 1 ? pct.neutral : pct.negative);
+            $(this).css('width', w + '%');
+        });
+        $widget.find('.dfr-dist-percent').each(function(i) {
+            var p = i === 0 ? pct.positive : (i === 1 ? pct.neutral : pct.negative);
+            $(this).text(p + '%');
+        });
+    }
+
+    // THUMBS SYSTEM (Original)
     function initRatingButtons($widget, postId) {
         $widget.on('click', '.dfr-rating-btn', function(e) {
             e.preventDefault();
             var $btn = $(this), $all = $widget.find('.dfr-rating-btn');
-            
-            // Honeypot-Wert auslesen
             var hpValue = $widget.find('input[name="dfr_honeypot_field"]').val();
             
             if (localStorage.getItem(LOCAL_STORAGE_KEY + postId)) { 
@@ -62,7 +92,7 @@
                     nonce: config.nonce, 
                     post_id: postId, 
                     vote: vote,
-                    hp_field: hpValue // Honeypot-Wert mitsenden
+                    hp_field: hpValue
                 },
                 success: function(r) {
                     if (r.success) {
@@ -96,6 +126,98 @@
                 $btn.addClass('dfr-selected');
             }
         });
+    }
+
+    // STARS SYSTEM (Neu)
+    function initStarRating($widget, postId) {
+        var $stars = $widget.find('.dfr-star-btn');
+        var hoverRating = 0;
+        
+        // Hover-Effekt
+        $stars.on('mouseenter', function() {
+            hoverRating = parseInt($(this).data('rating'));
+            highlightStars($stars, hoverRating);
+        });
+        
+        $widget.find('.dfr-stars-rating').on('mouseleave', function() {
+            hoverRating = 0;
+            highlightStars($stars, 0);
+        });
+        
+        // Click-Handler
+        $stars.on('click', function(e) {
+            e.preventDefault();
+            
+            if (localStorage.getItem(LOCAL_STORAGE_KEY + postId)) {
+                showMessage($widget, config.strings.already_voted, 'info');
+                return;
+            }
+            
+            var rating = parseInt($(this).data('rating'));
+            var hpValue = $widget.find('input[name="dfr_honeypot_field"]').val();
+            
+            $stars.prop('disabled', true);
+            highlightStars($stars, rating);
+            
+            $.ajax({
+                url: config.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'dfr_submit_vote',
+                    nonce: config.nonce,
+                    post_id: postId,
+                    star_rating: rating,
+                    hp_field: hpValue
+                },
+                success: function(r) {
+                    if (r.success) {
+                        localStorage.setItem(LOCAL_STORAGE_KEY + postId, 'star_' + rating);
+                        markStarSelected($stars, rating);
+                        updateStarsDisplay($widget, r.data.percentages, r.data.total);
+                        showMessage($widget, config.strings.thanks, 'success');
+                    } else {
+                        $stars.prop('disabled', false);
+                        highlightStars($stars, 0);
+                        showMessage($widget, r.data.message || config.strings.error, 'error');
+                    }
+                },
+                error: function() {
+                    $stars.prop('disabled', false);
+                    highlightStars($stars, 0);
+                    showMessage($widget, config.strings.error, 'error');
+                }
+            });
+        });
+    }
+    
+    function highlightStars($stars, rating) {
+        $stars.each(function(i) {
+            var $star = $(this);
+            if ((i + 1) <= rating) {
+                $star.addClass('dfr-hover');
+            } else {
+                $star.removeClass('dfr-hover');
+            }
+        });
+    }
+    
+    function markStarSelected($stars, rating) {
+        $stars.each(function(i) {
+            var $star = $(this);
+            $star.removeClass('dfr-hover');
+            if ((i + 1) <= rating) {
+                $star.addClass('dfr-selected');
+            }
+        });
+    }
+    
+    function markStarVoted($widget, vote) {
+        if (vote.indexOf('star_') === 0) {
+            var rating = parseInt(vote.replace('star_', ''));
+            var $stars = $widget.find('.dfr-star-btn');
+            markStarSelected($stars, rating);
+            $stars.prop('disabled', true);
+        }
     }
 
     function showMessage($widget, msg, type) {
