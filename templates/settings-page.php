@@ -294,106 +294,203 @@ $selected_types = $options['post_types'] ?? ['post'];
             </div>
         </div>
 
-        <!-- Texte & Lokalisierung -->
+        <!-- Icons & Grafiken -->
         <div class="dfr-card">
-            <h2>Texte & Lokalisierung</h2>
-            <p class="description" style="margin:0 0 20px;color:#666;">
-                Passe alle Texte an deine Sprache und Zielgruppe an. Perfekt für mehrsprachige Websites.
-            </p>
+            <h2>Icons & Grafiken</h2>
             
             <div class="dfr-field">
-                <label>Widget-Titel</label>
-                <input type="text" 
-                       name="text_title" 
-                       value="<?php echo esc_attr($options['text_title'] ?? 'War dieser Artikel hilfreich?'); ?>" 
-                       placeholder="War dieser Artikel hilfreich?"
-                       style="width:100%;max-width:500px">
+                <label>
+                    <input type="checkbox" name="use_custom_icons" value="1" <?php checked(!empty($options['use_custom_icons'])); ?>>
+                    Eigene Icons verwenden (statt Standard-SVG)
+                </label>
                 <p class="description">
-                    Der Haupttext über den Bewertungs-Buttons
+                    Lade deine eigenen Icons als SVG, PNG, JPG, GIF oder WebP hoch (max. 500KB pro Icon).
                 </p>
             </div>
             
             <div class="dfr-field">
-                <label>Button-Beschriftungen</label>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:10px;">
-                    <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            👍 Positiv
-                        </label>
-                        <input type="text" 
-                               name="text_pos" 
-                               value="<?php echo esc_attr($options['text_pos'] ?? 'Hilfreich'); ?>" 
-                               placeholder="Hilfreich"
-                               style="width:100%">
+                <label>Icon-Größe (Pixel)</label>
+                <input type="number" 
+                       name="icon_size" 
+                       value="<?php echo esc_attr($options['icon_size'] ?? 24); ?>" 
+                       min="16" 
+                       max="128" 
+                       style="width:100px">
+                <p class="description">Standard: 24px. Empfohlen: 16-48px</p>
+            </div>
+            
+            <?php if (!empty($options['use_custom_icons'])) : ?>
+            
+            <div class="dfr-info-box" style="background:#fff3cd;border-left-color:#ffc107;margin:20px 0;">
+                <p><strong>💡 Icon-Tipps:</strong></p>
+                <ul style="margin:10px 0 0 20px;">
+                    <li><strong>SVG</strong> - Empfohlen! Skaliert perfekt, kleine Dateigröße</li>
+                    <li><strong>PNG</strong> - Mit transparentem Hintergrund, 2x Größe für Retina</li>
+                    <li><strong>Optimierung</strong> - Nutze Tools wie SVGOMG oder TinyPNG</li>
+                    <li><strong>Farbig oder Monochrom</strong> - Bei Monochrom färbt CSS automatisch ein</li>
+                </ul>
+            </div>
+            
+            <!-- Thumbs Icons -->
+            <div class="dfr-icons-section" style="margin-top:30px;padding-top:30px;border-top:2px solid #f0f0f0;">
+                <h3 style="margin:0 0 20px;font-size:0.95rem;color:#666;text-transform:uppercase;letter-spacing:0.05em;">
+                    👍 Thumbs-System Icons
+                </h3>
+                
+                <?php 
+                $thumbs_icons = [
+                    'icon_positive' => ['label' => 'Positiv (Daumen hoch)', 'emoji' => '👍'],
+                    'icon_neutral' => ['label' => 'Neutral (Horizontal)', 'emoji' => '😐'],
+                    'icon_negative' => ['label' => 'Negativ (Daumen runter)', 'emoji' => '👎']
+                ];
+                
+                foreach ($thumbs_icons as $icon_key => $icon_data) :
+                    $current_icon = $options[$icon_key] ?? '';
+                ?>
+                <div class="dfr-icon-upload-row">
+                    <div class="dfr-icon-info">
+                        <strong><?php echo $icon_data['emoji']; ?> <?php echo esc_html($icon_data['label']); ?></strong>
+                        <?php if ($current_icon) : ?>
+                            <div class="dfr-icon-preview">
+                                <img src="<?php echo esc_url($current_icon); ?>" alt="<?php echo esc_attr($icon_data['label']); ?>" style="max-width:48px;max-height:48px;">
+                            </div>
+                        <?php endif; ?>
                     </div>
-                    <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            😐 Neutral
-                        </label>
-                        <input type="text" 
-                               name="text_neu" 
-                               value="<?php echo esc_attr($options['text_neu'] ?? 'Neutral'); ?>" 
-                               placeholder="Neutral"
-                               style="width:100%">
-                    </div>
-                    <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            👎 Negativ
-                        </label>
-                        <input type="text" 
-                               name="text_neg" 
-                               value="<?php echo esc_attr($options['text_neg'] ?? 'Nicht hilfreich'); ?>" 
-                               placeholder="Nicht hilfreich"
-                               style="width:100%">
+                    
+                    <div class="dfr-icon-actions">
+                        <form method="post" enctype="multipart/form-data" style="display:inline-block;">
+                            <?php wp_nonce_field('dfr_upload_icon_nonce'); ?>
+                            <input type="hidden" name="icon_type" value="<?php echo esc_attr($icon_key); ?>">
+                            <input type="file" name="dfr_icon_file" accept=".svg,.png,.jpg,.jpeg,.gif,.webp" required style="font-size:0.85rem;">
+                            <button type="submit" name="dfr_upload_icon" class="button">
+                                <?php echo $current_icon ? 'Ersetzen' : 'Hochladen'; ?>
+                            </button>
+                        </form>
+                        
+                        <?php if ($current_icon) : ?>
+                        <form method="post" style="display:inline-block;margin-left:10px;">
+                            <?php wp_nonce_field('dfr_delete_icon_nonce'); ?>
+                            <input type="hidden" name="icon_type" value="<?php echo esc_attr($icon_key); ?>">
+                            <button type="submit" name="dfr_delete_icon" class="button" onclick="return confirm('Icon wirklich löschen?');">
+                                Löschen
+                            </button>
+                        </form>
+                        <?php endif; ?>
                     </div>
                 </div>
-                <p class="description">
-                    Diese Texte werden nur im <strong>Thumbs Theme</strong> verwendet
-                </p>
+                <?php endforeach; ?>
+            </div>
+            
+            <!-- Sterne Icons -->
+            <div class="dfr-icons-section" style="margin-top:30px;padding-top:30px;border-top:2px solid #f0f0f0;">
+                <h3 style="margin:0 0 20px;font-size:0.95rem;color:#666;text-transform:uppercase;letter-spacing:0.05em;">
+                    ⭐ Sterne-System Icons
+                </h3>
+                
+                <?php 
+                $star_icons = [
+                    'icon_star_empty' => ['label' => 'Stern (Leer)', 'emoji' => '☆'],
+                    'icon_star_filled' => ['label' => 'Stern (Gefüllt)', 'emoji' => '★']
+                ];
+                
+                foreach ($star_icons as $icon_key => $icon_data) :
+                    $current_icon = $options[$icon_key] ?? '';
+                ?>
+                <div class="dfr-icon-upload-row">
+                    <div class="dfr-icon-info">
+                        <strong><?php echo $icon_data['emoji']; ?> <?php echo esc_html($icon_data['label']); ?></strong>
+                        <?php if ($current_icon) : ?>
+                            <div class="dfr-icon-preview">
+                                <img src="<?php echo esc_url($current_icon); ?>" alt="<?php echo esc_attr($icon_data['label']); ?>" style="max-width:48px;max-height:48px;">
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="dfr-icon-actions">
+                        <form method="post" enctype="multipart/form-data" style="display:inline-block;">
+                            <?php wp_nonce_field('dfr_upload_icon_nonce'); ?>
+                            <input type="hidden" name="icon_type" value="<?php echo esc_attr($icon_key); ?>">
+                            <input type="file" name="dfr_icon_file" accept=".svg,.png,.jpg,.jpeg,.gif,.webp" required style="font-size:0.85rem;">
+                            <button type="submit" name="dfr_upload_icon" class="button">
+                                <?php echo $current_icon ? 'Ersetzen' : 'Hochladen'; ?>
+                            </button>
+                        </form>
+                        
+                        <?php if ($current_icon) : ?>
+                        <form method="post" style="display:inline-block;margin-left:10px;">
+                            <?php wp_nonce_field('dfr_delete_icon_nonce'); ?>
+                            <input type="hidden" name="icon_type" value="<?php echo esc_attr($icon_key); ?>">
+                            <button type="submit" name="dfr_delete_icon" class="button" onclick="return confirm('Icon wirklich löschen?');">
+                                Löschen
+                            </button>
+                        </form>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            
+            <div class="dfr-info-box" style="margin-top:30px;">
+                <p><strong>🎨 Empfohlene Icon-Quellen:</strong></p>
+                <ul style="margin:10px 0 0 20px;font-size:0.9rem;">
+                    <li><strong>Heroicons</strong> - https://heroicons.com (MIT License)</li>
+                    <li><strong>Feather Icons</strong> - https://feathericons.com (MIT License)</li>
+                    <li><strong>Font Awesome</strong> - https://fontawesome.com (Free Icons)</li>
+                    <li><strong>Flaticon</strong> - https://flaticon.com (Attribution erforderlich)</li>
+                    <li><strong>Iconfinder</strong> - https://iconfinder.com (Verschiedene Lizenzen)</li>
+                </ul>
+            </div>
+            
+            <?php endif; ?>
+        </div>
+
+        <!-- Texte & Lokalisierung -->
+        <div class="dfr-card">
+            <h2>Texte & Lokalisierung</h2>
+            <p class="description" style="margin:0 0 20px;color:#666;">Passe alle Texte an deine Sprache und Zielgruppe an.</p>
+            
+            <div class="dfr-field">
+                <label>Widget-Titel</label>
+                <input type="text" name="text_title" value="<?php echo esc_attr($options['text_title'] ?? 'War dieser Artikel hilfreich?'); ?>" style="width:100%;max-width:500px">
+                <p class="description">Standard: "War dieser Artikel hilfreich?"</p>
+            </div>
+            
+            <div class="dfr-field">
+                <label>Button-Texte</label>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:10px;">
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Positiv</label>
+                        <input type="text" name="text_pos" value="<?php echo esc_attr($options['text_pos'] ?? 'Hilfreich'); ?>" style="width:100%">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Neutral</label>
+                        <input type="text" name="text_neu" value="<?php echo esc_attr($options['text_neu'] ?? 'Neutral'); ?>" style="width:100%">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Negativ</label>
+                        <input type="text" name="text_neg" value="<?php echo esc_attr($options['text_neg'] ?? 'Nicht hilfreich'); ?>" style="width:100%">
+                    </div>
+                </div>
             </div>
             
             <div class="dfr-field">
                 <label>Feedback-Meldungen</label>
-                <div style="display:grid;gap:12px;margin-top:10px;">
+                <div style="display:grid;gap:10px;margin-top:10px;">
                     <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            ⏳ Während Speicherung
-                        </label>
-                        <input type="text" 
-                               name="text_saving" 
-                               value="<?php echo esc_attr($options['text_saving'] ?? 'Wird gespeichert...'); ?>" 
-                               placeholder="Wird gespeichert..."
-                               style="width:100%;max-width:500px">
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Während Speicherung</label>
+                        <input type="text" name="text_saving" value="<?php echo esc_attr($options['text_saving'] ?? 'Wird gespeichert...'); ?>" style="width:100%;max-width:500px">
                     </div>
                     <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            ✅ Erfolgsmeldung
-                        </label>
-                        <input type="text" 
-                               name="text_thanks" 
-                               value="<?php echo esc_attr($options['text_thanks'] ?? 'Danke für dein Feedback!'); ?>" 
-                               placeholder="Danke für dein Feedback!"
-                               style="width:100%;max-width:500px">
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Erfolgsmeldung (Danke)</label>
+                        <input type="text" name="text_thanks" value="<?php echo esc_attr($options['text_thanks'] ?? 'Danke für dein Feedback!'); ?>" style="width:100%;max-width:500px">
                     </div>
                     <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            ℹ️ Bereits abgestimmt
-                        </label>
-                        <input type="text" 
-                               name="text_already_voted" 
-                               value="<?php echo esc_attr($options['text_already_voted'] ?? 'Du hast bereits abgestimmt.'); ?>" 
-                               placeholder="Du hast bereits abgestimmt."
-                               style="width:100%;max-width:500px">
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Bereits abgestimmt</label>
+                        <input type="text" name="text_already_voted" value="<?php echo esc_attr($options['text_already_voted'] ?? 'Du hast bereits abgestimmt.'); ?>" style="width:100%;max-width:500px">
                     </div>
                     <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            ❌ Fehlermeldung
-                        </label>
-                        <input type="text" 
-                               name="text_error" 
-                               value="<?php echo esc_attr($options['text_error'] ?? 'Fehler beim Speichern.'); ?>" 
-                               placeholder="Fehler beim Speichern."
-                               style="width:100%;max-width:500px">
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Fehlermeldung</label>
+                        <input type="text" name="text_error" value="<?php echo esc_attr($options['text_error'] ?? 'Fehler beim Speichern.'); ?>" style="width:100%;max-width:500px">
                     </div>
                 </div>
             </div>
@@ -402,44 +499,20 @@ $selected_types = $options['post_types'] ?? ['post'];
                 <label>Statistik-Labels</label>
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:10px;">
                     <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            Label: % hilfreich
-                        </label>
-                        <input type="text" 
-                               name="text_helpful_label" 
-                               value="<?php echo esc_attr($options['text_helpful_label'] ?? 'hilfreich'); ?>" 
-                               placeholder="hilfreich"
-                               style="width:100%">
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Label: % hilfreich</label>
+                        <input type="text" name="text_helpful_label" value="<?php echo esc_attr($options['text_helpful_label'] ?? 'hilfreich'); ?>" style="width:100%">
                     </div>
                     <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            Label: Bewertungen
-                        </label>
-                        <input type="text" 
-                               name="text_votes_label" 
-                               value="<?php echo esc_attr($options['text_votes_label'] ?? 'Bewertungen'); ?>" 
-                               placeholder="Bewertungen"
-                               style="width:100%">
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Label: Bewertungen</label>
+                        <input type="text" name="text_votes_label" value="<?php echo esc_attr($options['text_votes_label'] ?? 'Bewertungen'); ?>" style="width:100%">
                     </div>
                     <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            Keine Bewertungen
-                        </label>
-                        <input type="text" 
-                               name="text_no_votes" 
-                               value="<?php echo esc_attr($options['text_no_votes'] ?? 'Noch keine Bewertungen'); ?>" 
-                               placeholder="Noch keine Bewertungen"
-                               style="width:100%">
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Keine Bewertungen</label>
+                        <input type="text" name="text_no_votes" value="<?php echo esc_attr($options['text_no_votes'] ?? 'Noch keine Bewertungen'); ?>" style="width:100%">
                     </div>
                     <div>
-                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">
-                            Sei der Erste
-                        </label>
-                        <input type="text" 
-                               name="text_be_first" 
-                               value="<?php echo esc_attr($options['text_be_first'] ?? 'Sei der Erste!'); ?>" 
-                               placeholder="Sei der Erste!"
-                               style="width:100%">
+                        <label style="font-size:0.8rem;color:#666;display:block;margin-bottom:5px;">Sei der Erste</label>
+                        <input type="text" name="text_be_first" value="<?php echo esc_attr($options['text_be_first'] ?? 'Sei der Erste!'); ?>" style="width:100%">
                     </div>
                 </div>
             </div>
@@ -448,7 +521,6 @@ $selected_types = $options['post_types'] ?? ['post'];
         <!-- Custom CSS -->
         <div class="dfr-card">
             <h2>Individuelles CSS</h2>
-            
             <div class="dfr-field">
                 <label>Custom CSS Code</label>
                 <textarea name="custom_css" 
@@ -459,44 +531,10 @@ $selected_types = $options['post_types'] ?? ['post'];
 }"
                           style="width:100%;font-family:monospace;font-size:13px;background:#1e1e1e;color:#d4d4d4;padding:15px;border:1px solid #333;border-radius:4px;"><?php echo esc_textarea($options['custom_css'] ?? ''); ?></textarea>
                 <p class="description">
-                    Füge hier eigenes CSS ein, um das Widget perfekt an dein Theme anzupassen. 
+                    Hier kannst du eigenes CSS einfügen, um das Widget perfekt an dein Theme anzupassen. 
                     Nutze CSS-Variablen wie <code>var(--dfr-primary)</code> für konsistente Farben.
                 </p>
             </div>
-            
-            <details style="margin-top: 15px;">
-                <summary style="cursor: pointer; font-weight: 500; color: #2271b1;">
-                    💡 CSS-Beispiele anzeigen
-                </summary>
-                <div style="margin-top: 15px;">
-                    <p><strong>Beispiel 1: Gradient Background</strong></p>
-                    <pre style="background:#1e1e1e;color:#d4d4d4;padding:15px;overflow-x:auto;font-size:12px;border-radius:4px;margin:10px 0;">.dfr-feedback-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}</pre>
-
-                    <p><strong>Beispiel 2: Glassmorphism</strong></p>
-                    <pre style="background:#1e1e1e;color:#d4d4d4;padding:15px;overflow-x:auto;font-size:12px;border-radius:4px;margin:10px 0;">.dfr-feedback-section {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}</pre>
-
-                    <p><strong>Beispiel 3: Button Styling</strong></p>
-                    <pre style="background:#1e1e1e;color:#d4d4d4;padding:15px;overflow-x:auto;font-size:12px;border-radius:4px;margin:10px 0;">.dfr-rating-btn {
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 12px 24px;
-}
-
-.dfr-rating-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}</pre>
-                </div>
-            </details>
         </div>
 
         <!-- Verwendung -->
@@ -504,25 +542,46 @@ $selected_types = $options['post_types'] ?? ['post'];
             <h2>Verwendung & Integration</h2>
             
             <div class="dfr-field">
-                <label>Shortcode (manuell einfügen)</label>
+                <label>Universal-Shortcode (nutzt Theme aus Einstellungen)</label>
                 <div class="dfr-shortcode-preview">
                     <code>[feedback_rating]</code>
                 </div>
                 <p class="description">
-                    Kopiere diesen Shortcode und füge ihn in jeden Beitrag oder jede Seite ein, wo du das Widget anzeigen möchtest.
+                    Verwendet das Theme, das oben in den Einstellungen ausgewählt wurde.
                 </p>
             </div>
             
             <div class="dfr-field">
-                <label>Shortcode mit Optionen</label>
+                <label>Thumbs-Shortcode (3-Stufen-System)</label>
                 <div class="dfr-shortcode-preview">
-                    <code>[feedback_rating show_stats="false" show_share="false"]</code>
+                    <code>[feedback_thumbs]</code>
+                </div>
+                <p class="description">
+                    Zeigt IMMER das 👍 Thumbs-System, unabhängig von den Einstellungen.
+                </p>
+            </div>
+            
+            <div class="dfr-field">
+                <label>Sterne-Shortcode (5-Stufen-System)</label>
+                <div class="dfr-shortcode-preview">
+                    <code>[feedback_stars]</code>
+                </div>
+                <p class="description">
+                    Zeigt IMMER das ⭐ Sterne-System, unabhängig von den Einstellungen.
+                </p>
+            </div>
+            
+            <div class="dfr-field">
+                <label>Mit zusätzlichen Optionen</label>
+                <div class="dfr-shortcode-preview">
+                    <code>[feedback_stars show_stats="false" show_share="false"]</code>
                 </div>
                 <p class="description">
                     <strong>Verfügbare Parameter:</strong><br>
-                    • <code>show_stats</code> - Statistik-Balken anzeigen (true/false)<br>
+                    • <code>show_stats</code> - Statistik anzeigen (true/false)<br>
                     • <code>show_share</code> - Share-Buttons anzeigen (true/false)<br>
-                    • <code>post_id</code> - Spezifische Post-ID (optional)
+                    • <code>post_id</code> - Spezifische Post-ID (optional)<br>
+                    • <code>theme</code> - Theme override: "thumbs" oder "stars"
                 </p>
             </div>
             
@@ -530,7 +589,7 @@ $selected_types = $options['post_types'] ?? ['post'];
                 <label>Gutenberg Block</label>
                 <p class="description" style="margin: 0;">
                     Im Block-Editor nach <strong>"Feedback Rating"</strong> suchen und einfügen. 
-                    Der Block bietet dieselben Optionen wie der Shortcode, aber mit visueller Oberfläche.
+                    Der Block bietet in der Sidebar die Möglichkeit, das Theme pro Block zu wählen.
                 </p>
             </div>
             
@@ -539,9 +598,6 @@ $selected_types = $options['post_types'] ?? ['post'];
                 <div class="dfr-shortcode-preview">
                     <code>&lt;?php echo do_shortcode('[feedback_rating]'); ?&gt;</code>
                 </div>
-                <p class="description">
-                    Füge das Widget programmatisch in deine Theme-Templates ein.
-                </p>
             </div>
         </div>
 
@@ -584,109 +640,3 @@ jQuery(document).ready(function($) {
     });
 });
 </script>
-
-<style>
-/* Theme Selector */
-.dfr-theme-selector {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    margin-top: 15px;
-}
-
-.dfr-theme-option {
-    position: relative;
-    cursor: pointer;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
-    transition: all 0.3s ease;
-    background: #fff;
-}
-
-.dfr-theme-option:hover {
-    border-color: #2271b1;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.dfr-theme-option.dfr-theme-active {
-    border-color: #2271b1;
-    background: #f0f6fc;
-}
-
-.dfr-theme-option input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.dfr-theme-preview {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.dfr-theme-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    padding: 20px;
-    background: #fafafa;
-    border-radius: 6px;
-    min-height: 80px;
-}
-
-.dfr-theme-option.dfr-theme-active .dfr-theme-icon {
-    background: #e3f2fd;
-}
-
-.dfr-theme-icon svg {
-    color: #666;
-}
-
-.dfr-theme-option.dfr-theme-active .dfr-theme-icon svg {
-    color: #2271b1;
-}
-
-.dfr-theme-info {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.dfr-theme-info strong {
-    font-size: 1.1rem;
-    color: #1d2327;
-}
-
-.dfr-theme-info span {
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.dfr-theme-info small {
-    color: #999;
-    font-size: 0.8rem;
-}
-
-/* Color Fields Enhancement */
-.dfr-color-value {
-    display: block;
-    text-align: center;
-    font-size: 0.75rem;
-    color: #666;
-    margin-top: 5px;
-    font-family: monospace;
-}
-
-/* Shortcode Preview Enhancement */
-.dfr-shortcode-preview {
-    position: relative;
-}
-
-.dfr-shortcode-preview code {
-    user-select: all;
-}
-</style>
