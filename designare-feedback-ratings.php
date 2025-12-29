@@ -228,6 +228,7 @@ public function render_feedback_widget($atts = []) {
         'showStats' => true,
         'show_share' => true,
         'showShare' => true,
+        'theme' => '', // NEU: Theme-Override
     ], $atts, 'feedback_rating');
 
     $atts['show_stats'] = $atts['show_stats'] && $atts['showStats'];
@@ -235,7 +236,13 @@ public function render_feedback_widget($atts = []) {
 
     $post_id = intval($atts['post_id']);
     $options = get_option('dfr_options', []);
-    $theme = $options['rating_theme'] ?? 'thumbs';
+    
+    // Theme bestimmen: 1. Shortcode-Parameter, 2. Einstellungen, 3. Default
+    if (!empty($atts['theme']) && in_array($atts['theme'], ['thumbs', 'stars'])) {
+        $theme = $atts['theme'];
+    } else {
+        $theme = $options['rating_theme'] ?? 'thumbs';
+    }
     
     $ratings = $this->get_ratings($post_id);
     $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
@@ -245,6 +252,10 @@ public function render_feedback_widget($atts = []) {
         'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
         'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
     ];
+
+    // Durchschnitt für Sterne-System
+    $score = ($ratings['positive'] * 5) + ($ratings['neutral'] * 3) + ($ratings['negative'] * 1);
+    $average = $total > 0 ? round($score / $total, 1) : 0;
 
     ob_start();
     if ($theme === 'stars') {
