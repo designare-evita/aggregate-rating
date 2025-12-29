@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Designare Feedback Ratings
  * Plugin URI: https://designare.at
- * Description: Sammelt Besucher-Feedback mit 2 Themes (Thumbs & Sterne) und generiert automatisch Schema.org AggregateRating für besseres SEO.
- * Version: 2.1.0
+ * Description: Sammelt Besucher-Feedback mit 2 Themes (Thumbs & Sterne), Custom Icons und automatischer Schema.org AggregateRating-Generierung für besseres SEO.
+ * Version: 2.2.0
  * Author: Michael Kanda
  * Author URI: https://designare.at
  * License: GPL v2 or later
@@ -14,7 +14,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('DFR_VERSION', '2.1.0');
+define('DFR_VERSION', '2.2.0');
 define('DFR_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('DFR_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -40,7 +40,6 @@ class Designare_Feedback_Ratings {
         add_action('wp_head', [$this, 'inject_schema_json_ld'], 5);
         add_action('wp_head', [$this, 'inject_custom_styles'], 20);
         
-        // Drei Shortcodes
         add_shortcode('feedback_rating', [$this, 'render_feedback_widget']);
         add_shortcode('feedback_thumbs', [$this, 'render_thumbs_widget']);
         add_shortcode('feedback_stars', [$this, 'render_stars_widget']);
@@ -81,6 +80,17 @@ class Designare_Feedback_Ratings {
             'border_radius' => '0',
             'button_style' => 'default',
             'custom_css' => '',
+            
+            // Icon-Upload
+            'use_custom_icons' => false,
+            'icon_positive' => '',
+            'icon_neutral' => '',
+            'icon_negative' => '',
+            'icon_star_empty' => '',
+            'icon_star_filled' => '',
+            'icon_size' => '24',
+            
+            // Texte
             'text_title' => 'War dieser Artikel hilfreich?',
             'text_pos' => 'Hilfreich',
             'text_neu' => 'Neutral',
@@ -443,10 +453,11 @@ class Designare_Feedback_Ratings {
         }
         if ($hook === 'feedback_page_dfr-settings' || $hook === 'post.php') {
             wp_enqueue_style('dfr-admin', DFR_PLUGIN_URL . 'assets/css/admin.css', [], DFR_VERSION);
+            wp_enqueue_media();
         }
     }
 
-    private function get_chart_data() {
+    public function get_chart_data() {
         global $wpdb;
         $options = get_option('dfr_options', []);
         $post_types = $options['post_types'] ?? ['post'];
@@ -515,11 +526,50 @@ class Designare_Feedback_Ratings {
     }
 
     public function render_dashboard_page() { 
+        $data = $this->get_chart_data();
         include DFR_PLUGIN_DIR . 'templates/dashboard-page.php'; 
     }
 
     public function render_settings_page() {
+        // Icon Upload Handler
+        if (isset($_POST['dfr_upload_icon'])) {
+            check_admin_referer('dfr_upload_icon_nonce');
+            
+            if (!empty($_FILES['dfr_icon_file']['name'])) {
+                $icon_type = sanitize_text_field($_POST['icon_type']);
+                $uploaded = $this->handle_icon_upload($_FILES['dfr_icon_file'], $icon_type);
+                
+                if ($uploaded['success']) {
+                    $options = get_option('dfr_options', []);
+                    $options[$icon_type] = $uploaded['url'];
+                    update_option('dfr_options', $options);
+                    echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Icon hochgeladen!</strong></p></div>';
+                } else {
+                    echo '<div class="notice notice-error is-dismissible"><p><strong>✗ Fehler:</strong> ' . esc_html($uploaded['error']) . '</p></div>';
+                }
+            }
+        }
+        
+        // Icon löschen
+        if (isset($_POST['dfr_delete_icon'])) {
+            check_admin_referer('dfr_delete_icon_nonce');
+            $icon_type = sanitize_text_field($_POST['icon_type']);
+            $options = get_option('dfr_options', []);
+            
+            if (!empty($options[$icon_type])) {
+                $attachment_id = attachment_url_to_postid($options[$icon_type]);
+                if ($attachment_id) {
+                    wp_delete_attachment($attachment_id, true);
+                }
+                $options[$icon_type] = '';
+                update_option('dfr_options', $options);
+                echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Icon gelöscht!</strong></p></div>';
+            }
+        }
+        
         if (isset($_POST['dfr_save_settings']) && check_admin_referer('dfr_settings_nonce')) {
+            $existing_options = get_option('dfr_options', []);
+            
             $options = [
                 'rating_theme' => sanitize_text_field($_POST['rating_theme'] ?? 'thumbs'),
                 'auto_append' => isset($_POST['auto_append']),
@@ -536,6 +586,17 @@ class Designare_Feedback_Ratings {
                 'border_radius' => intval($_POST['border_radius'] ?? 0),
                 'button_style' => sanitize_text_field($_POST['button_style'] ?? 'default'),
                 'custom_css' => wp_strip_all_tags($_POST['custom_css'] ?? ''),
+                
+                // Icon-Einstellungen
+                'use_custom_icons' => isset($_POST['use_custom_icons']),
+                'icon_size' => intval($_POST['icon_size'] ?? 24),
+                'icon_positive' => $existing_options['icon_positive'] ?? '',
+                'icon_neutral' => $existing_options['icon_neutral'] ?? '',
+                'icon_negative' => $existing_options['icon_negative'] ?? '',
+                'icon_star_empty' => $existing_options['icon_star_empty'] ?? '',
+                'icon_star_filled' => $existing_options['icon_star_filled'] ?? '',
+                
+                // Texte
                 'text_title' => sanitize_text_field($_POST['text_title'] ?? ''),
                 'text_pos' => sanitize_text_field($_POST['text_pos'] ?? ''),
                 'text_neu' => sanitize_text_field($_POST['text_neu'] ?? ''),
@@ -551,10 +612,48 @@ class Designare_Feedback_Ratings {
             ];
             update_option('dfr_options', $options);
             wp_cache_flush();
-            echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Einstellungen gespeichert!</strong> Theme: ' . esc_html($options['rating_theme']) . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Einstellungen gespeichert!</strong></p></div>';
         }
         $options = get_option('dfr_options', []);
         include DFR_PLUGIN_DIR . 'templates/settings-page.php';
+    }
+
+    private function handle_icon_upload($file, $icon_type) {
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return ['success' => false, 'error' => 'Upload-Fehler'];
+        }
+        
+        $allowed_types = ['image/svg+xml', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+        
+        if (!in_array($file['type'], $allowed_types)) {
+            return ['success' => false, 'error' => 'Nur SVG, PNG, JPG, GIF und WebP erlaubt'];
+        }
+        
+        if ($file['size'] > 500000) {
+            return ['success' => false, 'error' => 'Datei zu groß (max. 500KB)'];
+        }
+        
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
+        require_once(ABSPATH . 'wp-admin/includes/media.php');
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+        
+        $upload = wp_handle_upload($file, ['test_form' => false]);
+        
+        if (isset($upload['error'])) {
+            return ['success' => false, 'error' => $upload['error']];
+        }
+        
+        $attachment = [
+            'post_mime_type' => $upload['type'],
+            'post_title' => 'DFR Icon: ' . $icon_type,
+            'post_content' => '',
+            'post_status' => 'inherit'
+        ];
+        
+        $attachment_id = wp_insert_attachment($attachment, $upload['file']);
+        wp_update_attachment_metadata($attachment_id, wp_generate_attachment_metadata($attachment_id, $upload['file']));
+        
+        return ['success' => true, 'url' => $upload['url'], 'id' => $attachment_id];
     }
 
     public function register_rest_routes() {
