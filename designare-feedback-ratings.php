@@ -499,44 +499,47 @@ public function handle_vote() {
 
     public function render_dashboard_page() { include DFR_PLUGIN_DIR . 'templates/dashboard-page.php'; }
 
-    public function render_settings_page() {
-        if (isset($_POST['dfr_save_settings']) && check_admin_referer('dfr_settings_nonce')) {
-            $options = [
-                'auto_append' => isset($_POST['auto_append']),
-                'post_types' => isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : ['post'],
-                'show_stats_bar' => isset($_POST['show_stats_bar']),
-                'enable_schema' => isset($_POST['enable_schema']),
-                'rate_limit_minutes' => intval($_POST['rate_limit_minutes'] ?? 60),
-                'email_alerts' => isset($_POST['email_alerts']),
-                'alert_email' => sanitize_email($_POST['alert_email'] ?? ''),
-                'primary_color' => sanitize_hex_color($_POST['primary_color'] ?? '#FCB500'),
-                'positive_color' => sanitize_hex_color($_POST['positive_color'] ?? '#51cf66'),
-                'neutral_color' => sanitize_hex_color($_POST['neutral_color'] ?? '#FCB500'),
-                'negative_color' => sanitize_hex_color($_POST['negative_color'] ?? '#ff6b6b'),
-                'border_radius' => intval($_POST['border_radius'] ?? 10),
-                'button_style' => sanitize_text_field($_POST['button_style'] ?? 'default'),
-                // Texte & Lokalisierung
-                'custom_css' => wp_strip_all_tags($_POST['custom_css'] ?? ''),
-                'text_title' => sanitize_text_field($_POST['text_title'] ?? ''),
-                'text_pos' => sanitize_text_field($_POST['text_pos'] ?? ''),
-                'text_neu' => sanitize_text_field($_POST['text_neu'] ?? ''),
-                'text_neg' => sanitize_text_field($_POST['text_neg'] ?? ''),
-                'text_saving' => sanitize_text_field($_POST['text_saving'] ?? ''),
-                'text_thanks' => sanitize_text_field($_POST['text_thanks'] ?? ''),
-                'text_already_voted' => sanitize_text_field($_POST['text_already_voted'] ?? ''),
-                'text_error' => sanitize_text_field($_POST['text_error'] ?? ''),
-                'text_helpful_label' => sanitize_text_field($_POST['text_helpful_label'] ?? ''),
-                'text_votes_label' => sanitize_text_field($_POST['text_votes_label'] ?? ''),
-                'text_no_votes' => sanitize_text_field($_POST['text_no_votes'] ?? ''),
-                'text_be_first' => sanitize_text_field($_POST['text_be_first'] ?? ''),
-            ];
-            update_option('dfr_options', $options);
-            echo '<div class="notice notice-success"><p>Einstellungen gespeichert.</p></div>';
-        }
-        $options = get_option('dfr_options', []);
-        include DFR_PLUGIN_DIR . 'templates/settings-page.php';
+public function render_settings_page() {
+    if (isset($_POST['dfr_save_settings']) && check_admin_referer('dfr_settings_nonce')) {
+        $options = [
+            'rating_theme' => sanitize_text_field($_POST['rating_theme'] ?? 'thumbs'), // WICHTIG: Zuerst!
+            'auto_append' => isset($_POST['auto_append']),
+            'post_types' => isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : ['post'],
+            'show_stats_bar' => isset($_POST['show_stats_bar']),
+            'enable_schema' => isset($_POST['enable_schema']),
+            'rate_limit_minutes' => intval($_POST['rate_limit_minutes'] ?? 60),
+            'email_alerts' => isset($_POST['email_alerts']),
+            'alert_email' => sanitize_email($_POST['alert_email'] ?? ''),
+            'primary_color' => sanitize_hex_color($_POST['primary_color'] ?? '#C4A35A'),
+            'positive_color' => sanitize_hex_color($_POST['positive_color'] ?? '#51cf66'),
+            'neutral_color' => sanitize_hex_color($_POST['neutral_color'] ?? '#C4A35A'),
+            'negative_color' => sanitize_hex_color($_POST['negative_color'] ?? '#ff6b6b'),
+            'border_radius' => intval($_POST['border_radius'] ?? 0),
+            'button_style' => sanitize_text_field($_POST['button_style'] ?? 'default'),
+            'custom_css' => wp_strip_all_tags($_POST['custom_css'] ?? ''),
+            'text_title' => sanitize_text_field($_POST['text_title'] ?? ''),
+            'text_pos' => sanitize_text_field($_POST['text_pos'] ?? ''),
+            'text_neu' => sanitize_text_field($_POST['text_neu'] ?? ''),
+            'text_neg' => sanitize_text_field($_POST['text_neg'] ?? ''),
+            'text_saving' => sanitize_text_field($_POST['text_saving'] ?? ''),
+            'text_thanks' => sanitize_text_field($_POST['text_thanks'] ?? ''),
+            'text_already_voted' => sanitize_text_field($_POST['text_already_voted'] ?? ''),
+            'text_error' => sanitize_text_field($_POST['text_error'] ?? ''),
+            'text_helpful_label' => sanitize_text_field($_POST['text_helpful_label'] ?? ''),
+            'text_votes_label' => sanitize_text_field($_POST['text_votes_label'] ?? ''),
+            'text_no_votes' => sanitize_text_field($_POST['text_no_votes'] ?? ''),
+            'text_be_first' => sanitize_text_field($_POST['text_be_first'] ?? ''),
+        ];
+        update_option('dfr_options', $options);
+        
+        // Cache leeren
+        wp_cache_flush();
+        
+        echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Einstellungen gespeichert!</strong> Theme: ' . esc_html($options['rating_theme']) . '</p></div>';
     }
-
+    $options = get_option('dfr_options', []);
+    include DFR_PLUGIN_DIR . 'templates/settings-page.php';
+}
     public function register_rest_routes() {
         register_rest_route('dfr/v1', '/ratings/(?P<id>\d+)', [
             'methods' => 'GET', 'callback' => [$this, 'rest_get_ratings'], 'permission_callback' => '__return_true',
