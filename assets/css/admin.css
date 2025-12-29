@@ -1,8 +1,50 @@
 /* ================================
-   DESIGNARE FEEDBACK RATINGS
-   Admin Stylesheet v2.2.0
+   FORCE LIGHT BACKGROUND FOR ADMIN
    ================================ */
 
+.dfr-settings-wrap,
+.dfr-dashboard {
+    background: #f0f0f1 !important;
+    min-height: 100vh;
+}
+
+.wrap.dfr-settings-wrap,
+.wrap.dfr-dashboard {
+    background: #f0f0f1 !important;
+}
+
+/* Force white cards */
+.dfr-card {
+    background: #fff !important;
+    border: 1px solid #ccd0d4 !important;
+    color: #1d2327 !important;
+}
+
+.dfr-card h2 {
+    color: #1d2327 !important;
+}
+
+.dfr-field > label {
+    color: #1d2327 !important;
+}
+
+.dfr-field .description {
+    color: #646970 !important;
+}
+
+/* Override WordPress dark mode for our plugin */
+@media (prefers-color-scheme: dark) {
+    .dfr-settings-wrap,
+    .dfr-dashboard {
+        background: #f0f0f1 !important;
+    }
+    
+    .dfr-card {
+        background: #fff !important;
+        border-color: #ccd0d4 !important;
+        color: #1d2327 !important;
+    }
+}
 /* === SETTINGS WRAP === */
 .dfr-settings-wrap {
     max-width: 1200px;
