@@ -75,6 +75,38 @@
     font-size: 12px;
 }
 
+/* === CUSTOM CSS TEXTAREA === */
+.dfr-field textarea[name="custom_css"] {
+    width: 100%;
+    font-family: "Monaco", "Menlo", "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    background: #282c34;
+    color: #abb2bf;
+    padding: 15px;
+    border: 1px solid #3e4451;
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 200px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.dfr-field textarea[name="custom_css"]:focus {
+    outline: none;
+    border-color: #528bff;
+    box-shadow: 0 0 0 2px rgba(82, 139, 255, 0.2);
+}
+
+.dfr-field textarea[name="custom_css"]::placeholder {
+    color: #5c6370;
+    opacity: 1;
+}
+
+.dfr-field textarea[name="custom_css"]::selection {
+    background: #3e4451;
+    color: #61afef;
+}
+
 /* === THEME SELECTOR === */
 .dfr-theme-selector {
     display: grid;
@@ -672,5 +704,16 @@
     .dfr-icon-upload-row {
         background: #2a2a2a;
         border-color: #444;
+    }
+    
+    /* Custom CSS Textarea in Dark Mode */
+    .dfr-field textarea[name="custom_css"] {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        border-color: #444;
+    }
+    
+    .dfr-field textarea[name="custom_css"]::placeholder {
+        color: #6a737d;
     }
 }
