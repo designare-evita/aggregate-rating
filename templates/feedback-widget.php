@@ -3,6 +3,10 @@ if (!defined('ABSPATH')) exit;
 $options = get_option('dfr_options', []);
 $show_stats = filter_var($atts['show_stats'] ?? true, FILTER_VALIDATE_BOOLEAN);
 $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
+
+// Icons bestimmen
+$use_custom = !empty($options['use_custom_icons']);
+$icon_size = $options['icon_size'] ?? 24;
 ?>
 <aside class="dfr-feedback-section" data-post-id="<?php echo esc_attr($post_id); ?>">
     <div class="dfr-feedback-container">
@@ -14,22 +18,51 @@ $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
         </div>
         
         <div class="dfr-rating-buttons">
+            <!-- Positiv Button -->
             <button class="dfr-rating-btn dfr-positive" type="button">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 19V5M5 12l7-7 7 7"/>
-                </svg>
+                <?php if ($use_custom && !empty($options['icon_positive'])) : ?>
+                    <img src="<?php echo esc_url($options['icon_positive']); ?>" 
+                         alt="Positiv" 
+                         width="<?php echo esc_attr($icon_size); ?>" 
+                         height="<?php echo esc_attr($icon_size); ?>"
+                         class="dfr-custom-icon">
+                <?php else : ?>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 19V5M5 12l7-7 7 7"/>
+                    </svg>
+                <?php endif; ?>
                 <?php echo esc_html($options['text_pos'] ?? 'Hilfreich'); ?>
             </button>
+            
+            <!-- Neutral Button -->
             <button class="dfr-rating-btn dfr-neutral" type="button">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14"/>
-                </svg>
+                <?php if ($use_custom && !empty($options['icon_neutral'])) : ?>
+                    <img src="<?php echo esc_url($options['icon_neutral']); ?>" 
+                         alt="Neutral" 
+                         width="<?php echo esc_attr($icon_size); ?>" 
+                         height="<?php echo esc_attr($icon_size); ?>"
+                         class="dfr-custom-icon">
+                <?php else : ?>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14"/>
+                    </svg>
+                <?php endif; ?>
                 <?php echo esc_html($options['text_neu'] ?? 'Neutral'); ?>
             </button>
+            
+            <!-- Negativ Button -->
             <button class="dfr-rating-btn dfr-negative" type="button">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 5v14M5 12l7 7 7-7"/>
-                </svg>
+                <?php if ($use_custom && !empty($options['icon_negative'])) : ?>
+                    <img src="<?php echo esc_url($options['icon_negative']); ?>" 
+                         alt="Negativ" 
+                         width="<?php echo esc_attr($icon_size); ?>" 
+                         height="<?php echo esc_attr($icon_size); ?>"
+                         class="dfr-custom-icon">
+                <?php else : ?>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12l7 7 7-7"/>
+                    </svg>
+                <?php endif; ?>
                 <?php echo esc_html($options['text_neg'] ?? 'Nicht hilfreich'); ?>
             </button>
         </div>
