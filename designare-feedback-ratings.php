@@ -267,54 +267,76 @@ public function render_feedback_widget($atts = []) {
         return $content . $this->render_feedback_widget();
     }
 
-    public function handle_vote() {
-        // 1. HONEYPOT CHECK - Wenn ausgefüllt = Bot
-        if (!empty($_POST['hp_field'])) {
-            wp_send_json_error(['message' => 'Spam erkannt.'], 403);
-        }
-
-        // 2. Sicherheitscheck (Nonce)
-        if (!check_ajax_referer('dfr_vote_nonce', 'nonce', false)) {
-            wp_send_json_error(['message' => 'Sicherheitscheck fehlgeschlagen.'], 403);
-        }
-
-        // 3. Rate Limiting
-        if ($this->is_rate_limited()) {
-            wp_send_json_error(['message' => 'Bitte warte etwas.'], 429);
-        }
-
-        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
-        $vote = isset($_POST['vote']) ? sanitize_text_field($_POST['vote']) : '';
-
-        if (!$post_id || !in_array($vote, ['positive', 'neutral', 'negative'])) {
-            wp_send_json_error(['message' => 'Ungültige Anfrage.'], 400);
-        }
-
-        if (!get_post($post_id)) {
-            wp_send_json_error(['message' => 'Beitrag nicht gefunden.'], 404);
-        }
-
-        $ratings = $this->get_ratings($post_id);
-        $ratings[$vote]++;
-        
-        update_post_meta($post_id, self::META_KEY, $ratings);
-        delete_transient(self::CACHE_PREFIX . $post_id);
-        $this->set_rate_limit();
-
-        if ($vote === 'negative') {
-            $this->maybe_send_alert_email($post_id, $ratings);
-        }
-
-        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
-        $percentages = [
-            'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
-            'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
-            'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
-        ];
-
-        wp_send_json_success(['stats' => $ratings, 'total' => $total, 'percentages' => $percentages]);
+public function handle_vote() {
+    // 1. HONEYPOT CHECK
+    if (!empty($_POST['hp_field'])) {
+        wp_send_json_error(['message' => 'Spam erkannt.'], 403);
     }
 
+    // 2. Sicherheitscheck
+    if (!check_ajax_referer('dfr_vote_nonce', 'nonce', false)) {
+        wp_send_json_error(['message' => 'Sicherheitscheck fehlgeschlagen.'], 403);
+    }
+
+    // 3. Rate Limiting
+    if ($this->is_rate_limited()) {
+        wp_send_json_error(['message' => 'Bitte warte etwas.'], 429);
+    }
+
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+    $vote = isset($_POST['vote']) ? sanitize_text_field($_POST['vote']) : '';
+    
+    // NEU: Unterstützung für Sterne (1-5)
+    $star_rating = isset($_POST['star_rating']) ? intval($_POST['star_rating']) : 0;
+
+    if (!$post_id) {
+        wp_send_json_error(['message' => 'Ungültige Anfrage.'], 400);
+    }
+
+    // Sterne-Validierung
+    if ($star_rating > 0) {
+        if ($star_rating < 1 || $star_rating > 5) {
+            wp_send_json_error(['message' => 'Ungültige Bewertung.'], 400);
+        }
+        // Sterne in Thumbs-System konvertieren
+        if ($star_rating >= 4) $vote = 'positive';
+        elseif ($star_rating >= 2) $vote = 'neutral';
+        else $vote = 'negative';
+    }
+
+    if (!in_array($vote, ['positive', 'neutral', 'negative'])) {
+        wp_send_json_error(['message' => 'Ungültige Anfrage.'], 400);
+    }
+
+    if (!get_post($post_id)) {
+        wp_send_json_error(['message' => 'Beitrag nicht gefunden.'], 404);
+    }
+
+    $ratings = $this->get_ratings($post_id);
+    $ratings[$vote]++;
+    
+    update_post_meta($post_id, self::META_KEY, $ratings);
+    delete_transient(self::CACHE_PREFIX . $post_id);
+    $this->set_rate_limit();
+
+    if ($vote === 'negative') {
+        $this->maybe_send_alert_email($post_id, $ratings);
+    }
+
+    $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+    $percentages = [
+        'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
+        'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
+        'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
+    ];
+
+    wp_send_json_success([
+        'stats' => $ratings, 
+        'total' => $total, 
+        'percentages' => $percentages,
+        'star_rating' => $star_rating
+    ]);
+}
     public function handle_get_stats() {
         $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
         if (!$post_id) wp_send_json_error(['message' => 'Post ID fehlt.'], 400);
