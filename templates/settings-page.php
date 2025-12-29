@@ -528,12 +528,21 @@ $selected_types = $options['post_types'] ?? ['post'];
                           placeholder="/* Dein eigenes CSS hier einfügen */
 .dfr-feedback-section {
     /* Anpassungen */
-}"
-                          style="width:100%;font-family:monospace;font-size:13px;background:#1e1e1e;color:#d4d4d4;padding:15px;border:1px solid #333;border-radius:4px;"><?php echo esc_textarea($options['custom_css'] ?? ''); ?></textarea>
+}"><?php echo esc_textarea($options['custom_css'] ?? ''); ?></textarea>
                 <p class="description">
                     Hier kannst du eigenes CSS einfügen, um das Widget perfekt an dein Theme anzupassen. 
                     Nutze CSS-Variablen wie <code>var(--dfr-primary)</code> für konsistente Farben.
                 </p>
+            </div>
+            
+            <div class="dfr-info-box" style="margin-top:15px;">
+                <p><strong>💡 CSS-Tipps:</strong></p>
+                <ul style="margin:10px 0 0 20px;">
+                    <li><strong>CSS-Variablen nutzen:</strong> <code>var(--dfr-primary)</code>, <code>var(--dfr-positive)</code></li>
+                    <li><strong>Thumbs-Theme ansprechen:</strong> <code>.dfr-feedback-section:not(.dfr-stars-theme)</code></li>
+                    <li><strong>Sterne-Theme ansprechen:</strong> <code>.dfr-stars-theme</code></li>
+                    <li><strong>Mobile anpassen:</strong> <code>@media (max-width: 768px) { ... }</code></li>
+                </ul>
             </div>
         </div>
 
