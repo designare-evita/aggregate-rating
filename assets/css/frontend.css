@@ -280,3 +280,140 @@
         color: #666;
     }
 }
+
+/* === STARS THEME === */
+.dfr-stars-theme .dfr-stars-container {
+    margin-bottom: 1.5rem;
+}
+
+.dfr-stars-rating {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.dfr-star-btn {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-color-muted, #888);
+}
+
+.dfr-star-btn:hover:not(:disabled),
+.dfr-star-btn.dfr-hover {
+    color: var(--dfr-primary, var(--accent-color, #C4A35A));
+    transform: scale(1.1);
+}
+
+.dfr-star-btn svg {
+    display: block;
+}
+
+.dfr-star-btn:disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+
+.dfr-star-btn.dfr-filled svg {
+    fill: var(--dfr-primary, var(--accent-color, #C4A35A));
+}
+
+.dfr-star-btn.dfr-selected svg {
+    fill: var(--dfr-primary, var(--accent-color, #C4A35A));
+    animation: dfrStarPulse 0.5s ease;
+}
+
+/* Durchschnitt */
+.dfr-stars-average {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-color-muted, #888);
+}
+
+.dfr-avg-rating {
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: var(--text-color, #e0e0e0);
+}
+
+.dfr-avg-stars {
+    display: flex;
+    gap: 2px;
+    color: var(--dfr-primary, var(--accent-color, #C4A35A));
+}
+
+.dfr-avg-count {
+    font-size: 0.85rem;
+}
+
+.dfr-no-ratings,
+.dfr-be-first {
+    font-size: 0.9rem;
+}
+
+/* Verteilung */
+.dfr-stars-distribution {
+    max-width: 400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dfr-dist-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 50px;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.dfr-dist-label {
+    color: var(--text-color-muted, #888);
+    text-align: right;
+}
+
+.dfr-dist-bar {
+    height: 6px;
+    background: var(--border-color, rgba(255,255,255,0.1));
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.dfr-dist-fill {
+    height: 100%;
+    background: var(--dfr-primary, var(--accent-color, #C4A35A));
+    transition: width 0.5s ease;
+}
+
+.dfr-dist-percent {
+    color: var(--text-color-muted, #888);
+    text-align: right;
+}
+
+@keyframes dfrStarPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .dfr-stars-rating {
+        gap: 4px;
+    }
+    
+    .dfr-star-btn svg {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .dfr-avg-rating {
+        font-size: 1.5rem;
+    }
+}
