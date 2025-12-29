@@ -3,54 +3,29 @@ if (!defined('ABSPATH')) exit;
 $options = get_option('dfr_options', []);
 $show_stats = filter_var($atts['show_stats'] ?? true, FILTER_VALIDATE_BOOLEAN);
 $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
-
-// Durchschnitt berechnen
-$score = ($ratings['positive'] * 5) + ($ratings['neutral'] * 3) + ($ratings['negative'] * 1);
-$average = $total > 0 ? round($score / $total, 1) : 0;
 ?>
 <aside class="dfr-feedback-section dfr-stars-theme" data-post-id="<?php echo esc_attr($post_id); ?>">
     <div class="dfr-feedback-container">
         <p class="dfr-feedback-title"><?php echo esc_html($options['text_title'] ?? 'Wie bewertest du diesen Artikel?'); ?></p>
         
-        <!-- HONEYPOT FIELD -->
         <div class="dfr-hp-wrap" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
             <label for="dfr_honeypot_field">Bitte nicht ausfüllen</label>
             <input type="text" name="dfr_honeypot_field" id="dfr_honeypot_field" value="" tabindex="-1" autocomplete="off">
         </div>
         
-        <!-- Sterne-Bewertung -->
         <div class="dfr-stars-container">
             <div class="dfr-stars-rating">
-                <button class="dfr-star-btn" data-rating="1" type="button" aria-label="1 Stern">
+                <?php for ($i = 1; $i <= 5; $i++) : ?>
+                <button class="dfr-star-btn" data-rating="<?php echo $i; ?>" type="button" aria-label="<?php echo $i; ?> Stern<?php echo $i > 1 ? 'e' : ''; ?>">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                     </svg>
                 </button>
-                <button class="dfr-star-btn" data-rating="2" type="button" aria-label="2 Sterne">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
-                </button>
-                <button class="dfr-star-btn" data-rating="3" type="button" aria-label="3 Sterne">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
-                </button>
-                <button class="dfr-star-btn" data-rating="4" type="button" aria-label="4 Sterne">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
-                </button>
-                <button class="dfr-star-btn" data-rating="5" type="button" aria-label="5 Sterne">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
-                </button>
+                <?php endfor; ?>
             </div>
         </div>
         
         <?php if ($show_stats && !empty($options['show_stats_bar'])) : ?>
-        <!-- Durchschnittliche Bewertung anzeigen -->
         <div class="dfr-stars-average">
             <?php if ($total > 0) : ?>
                 <span class="dfr-avg-rating"><?php echo esc_html($average); ?></span>
@@ -68,28 +43,27 @@ $average = $total > 0 ? round($score / $total, 1) : 0;
             <?php endif; ?>
         </div>
         
-        <!-- Optional: Detaillierte Verteilung -->
         <div class="dfr-stars-distribution">
             <div class="dfr-dist-row">
                 <span class="dfr-dist-label">5★</span>
                 <div class="dfr-dist-bar">
-                    <div class="dfr-dist-fill" style="width: <?php echo esc_attr($percentages['positive']); ?>%;"></div>
+                    <div class="dfr-dist-fill" style="width:<?php echo esc_attr($percentages['positive']); ?>%"></div>
                 </div>
                 <span class="dfr-dist-percent"><?php echo esc_html($percentages['positive']); ?>%</span>
             </div>
             <div class="dfr-dist-row">
                 <span class="dfr-dist-label">3★</span>
                 <div class="dfr-dist-bar">
-                    <div class="dfr-dist-fill" style="width: <?php echo esc_attr($percentages['neutral']); ?>%;"></div>
+                    <div class="dfr-dist-fill" style="width:<?php echo esc_attr($percentages['neutral']); ?>%"></div>
                 </div>
                 <span class="dfr-dist-percent"><?php echo esc_html($percentages['neutral']); ?>%</span>
             </div>
             <div class="dfr-dist-row">
                 <span class="dfr-dist-label">1★</span>
                 <div class="dfr-dist-bar">
-                    <div class="dfr-dist-fill" style="width: <?php echo esc_attr($percentages['negative']); ?>%;"></div>
+                    <div class="dfr-dist-fill" style="width:<?php echo esc_attr($percentages['negative']); ?>%"></div>
                 </div>
-                <span class="dfr-dist-percent"><?php echo esc_html($percentages['negative']); ?>%</span>
+                <span class="dfr-dist-percent"><?php echo esc_html($percentages['negative']); %>%</span>
             </div>
         </div>
         <?php endif; ?>
