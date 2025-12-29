@@ -107,6 +107,25 @@ $selected_types = $options['post_types'] ?? ['post'];
                 <input type="text" name="text_title" value="<?php echo esc_attr($options['text_title'] ?? 'War dieser Artikel hilfreich?'); ?>" style="width:100%;max-width:500px">
                 <p class="description">Standard: "War dieser Artikel hilfreich?"</p>
             </div>
+
+            <div class="dfr-card">
+    <h2>Theme</h2>
+    <div class="dfr-field">
+        <label>Bewertungssystem</label>
+        <div class="dfr-style-options">
+            <label>
+                <input type="radio" name="rating_theme" value="thumbs" <?php checked(($options['rating_theme'] ?? 'thumbs') === 'thumbs'); ?>>
+                <span>👍 Thumbs (3 Stufen)</span>
+            </label>
+            <label>
+                <input type="radio" name="rating_theme" value="stars" <?php checked(($options['rating_theme'] ?? 'thumbs') === 'stars'); ?>>
+                <span>⭐ Sterne (5 Stufen)</span>
+            </label>
+        </div>
+        <p class="description">Thumbs = Hilfreich/Neutral/Nicht hilfreich | Sterne = 1-5 Sterne Bewertung</p>
+    </div>
+</div>
+            
             
             <div class="dfr-field">
                 <label>Button-Texte</label>
