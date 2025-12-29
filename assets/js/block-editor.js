@@ -1,79 +1,177 @@
+/**
+ * Designare Feedback Ratings - Block Editor v2.2.0
+ */
+
 (function(blocks, element, blockEditor, components) {
-    var el = element.createElement;
-    var InspectorControls = blockEditor.InspectorControls;
-    var PanelBody = components.PanelBody;
-    var ToggleControl = components.ToggleControl;
-    var RadioControl = components.RadioControl;
+    const el = element.createElement;
+    const { registerBlockType } = blocks;
+    const { InspectorControls } = blockEditor;
+    const { PanelBody, RadioControl, ToggleControl } = components;
 
-    blocks.registerBlockType('dfr/feedback-rating', {
+    registerBlockType('dfr/feedback-rating', {
         title: 'Feedback Rating',
-        icon: 'star-filled',
+        description: 'Zeigt das Feedback-Rating-Widget mit wählbarem Theme an',
+        icon: el('svg', { width: 24, height: 24, viewBox: '0 0 24 24' },
+            el('polygon', {
+                points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2',
+                fill: 'none',
+                stroke: 'currentColor',
+                strokeWidth: 2
+            })
+        ),
         category: 'widgets',
-        description: 'Fügt ein Besucher-Feedback Widget hinzu',
+        keywords: ['feedback', 'rating', 'bewertung', 'sterne', 'thumbs'],
         attributes: {
-            showStats: { type: 'boolean', default: true },
-            showShare: { type: 'boolean', default: true },
-            theme: { type: 'string', default: '' }
+            theme: {
+                type: 'string',
+                default: ''
+            },
+            showStats: {
+                type: 'boolean',
+                default: true
+            },
+            showShare: {
+                type: 'boolean',
+                default: true
+            }
         },
-        edit: function(props) {
-            var attrs = props.attributes;
 
-            return el('div', {},
-                el(InspectorControls, {},
-                    el(PanelBody, { title: 'Einstellungen', initialOpen: true },
+        edit: function(props) {
+            const { attributes, setAttributes } = props;
+            const { theme, showStats, showShare } = attributes;
+
+            // Theme Label
+            const getThemeLabel = () => {
+                if (theme === 'thumbs') return 'Thumbs (3-Stufen)';
+                if (theme === 'stars') return 'Sterne (5-Stufen)';
+                return 'Aus Plugin-Einstellungen';
+            };
+
+            // Preview Icon
+            const renderPreviewIcon = () => {
+                if (theme === 'stars' || (!theme && window.dfrDefaultTheme === 'stars')) {
+                    return el('div', { className: 'dfr-block-preview-stars' },
+                        [1,2,3,4,5].map(i => 
+                            el('svg', {
+                                key: i,
+                                className: 'dfr-block-preview-star',
+                                viewBox: '0 0 24 24',
+                                fill: 'currentColor',
+                                stroke: 'currentColor',
+                                strokeWidth: 2
+                            },
+                                el('polygon', {
+                                    points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'
+                                })
+                            )
+                        )
+                    );
+                } else {
+                    return el('div', { className: 'dfr-block-preview-buttons' },
+                        el('div', { className: 'dfr-block-preview-btn positive' },
+                            el('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                                el('path', { d: 'M12 19V5M5 12l7-7 7 7' })
+                            ),
+                            'Hilfreich'
+                        ),
+                        el('div', { className: 'dfr-block-preview-btn neutral' },
+                            el('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                                el('path', { d: 'M5 12h14' })
+                            ),
+                            'Neutral'
+                        ),
+                        el('div', { className: 'dfr-block-preview-btn negative' },
+                            el('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                                el('path', { d: 'M12 5v14M5 12l7 7 7-7' })
+                            ),
+                            'Nicht hilfreich'
+                        )
+                    );
+                }
+            };
+
+            return [
+                // Inspector Controls (Sidebar)
+                el(InspectorControls, { key: 'inspector' },
+                    el(PanelBody, { title: 'Widget Einstellungen', initialOpen: true },
                         el(RadioControl, {
                             label: 'Theme',
-                            selected: attrs.theme || '',
+                            help: 'Wähle das Bewertungs-System',
+                            selected: theme,
                             options: [
-                                { label: 'Aus Plugin-Einstellungen', value: '' },
-                                { label: '👍 Thumbs (3 Stufen)', value: 'thumbs' },
-                                { label: '⭐ Sterne (5 Stufen)', value: 'stars' }
+                                { label: '⚙️ Aus Plugin-Einstellungen', value: '' },
+                                { label: '👍 Thumbs (3-Stufen)', value: 'thumbs' },
+                                { label: '⭐ Sterne (5-Stufen)', value: 'stars' }
                             ],
-                            onChange: function(val) { props.setAttributes({ theme: val }); }
+                            onChange: function(value) {
+                                setAttributes({ theme: value });
+                            }
                         }),
-                        el('hr'),
                         el(ToggleControl, {
                             label: 'Statistik-Balken anzeigen',
-                            checked: attrs.showStats,
-                            onChange: function(val) { props.setAttributes({ showStats: val }); }
+                            checked: showStats,
+                            onChange: function(value) {
+                                setAttributes({ showStats: value });
+                            }
                         }),
                         el(ToggleControl, {
                             label: 'Share-Buttons anzeigen',
-                            checked: attrs.showShare,
-                            onChange: function(val) { props.setAttributes({ showShare: val }); }
+                            checked: showShare,
+                            onChange: function(value) {
+                                setAttributes({ showShare: value });
+                            }
                         })
                     )
                 ),
-                el('div', { className: 'dfr-block-preview' },
-                    el('div', { className: 'dfr-block-preview-title' }, 
-                        attrs.theme === 'stars' ? 'Wie bewertest du diesen Artikel?' : 'War dieser Artikel hilfreich?'
-                    ),
-                    el('div', { className: 'dfr-block-preview-buttons' },
-                        attrs.theme === 'stars' ? [
-                            el('span', { key: 1, className: 'dfr-block-preview-btn star' }, '⭐'),
-                            el('span', { key: 2, className: 'dfr-block-preview-btn star' }, '⭐'),
-                            el('span', { key: 3, className: 'dfr-block-preview-btn star' }, '⭐'),
-                            el('span', { key: 4, className: 'dfr-block-preview-btn star' }, '⭐'),
-                            el('span', { key: 5, className: 'dfr-block-preview-btn star' }, '⭐')
-                        ] : [
-                            el('span', { key: 1, className: 'dfr-block-preview-btn pos' }, '👍 Hilfreich'),
-                            el('span', { key: 2, className: 'dfr-block-preview-btn neu' }, '😐 Neutral'),
-                            el('span', { key: 3, className: 'dfr-block-preview-btn neg' }, '👎 Nicht hilfreich')
-                        ]
-                    ),
-                    el('p', { 
-                        style: { fontSize: '11px', color: '#999', marginTop: '10px', textAlign: 'center' } 
-                    }, 
-                        attrs.theme === '' ? '📝 Theme aus Einstellungen' : 
-                        attrs.theme === 'stars' ? '⭐ Sterne-System' : '👍 Thumbs-System'
-                    ),
-                    !attrs.showStats ? null : el('p', { style: { fontSize: '12px', color: '#666', marginTop: '5px' } }, '📊 Statistik aktiv'),
-                    !attrs.showShare ? null : el('p', { style: { fontSize: '12px', color: '#666' } }, '🔗 Share aktiv')
+
+                // Block Content (Preview)
+                el('div', { 
+                    key: 'content',
+                    className: 'wp-block-dfr-feedback-rating'
+                },
+                    el('div', { className: 'dfr-block-preview' },
+                        el('svg', {
+                            className: 'dfr-block-preview-icon',
+                            viewBox: '0 0 24 24',
+                            fill: 'none',
+                            stroke: 'currentColor',
+                            strokeWidth: 2
+                        },
+                            el('polygon', {
+                                points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'
+                            })
+                        ),
+                        el('h3', { className: 'dfr-block-preview-title' },
+                            'Feedback Rating Widget'
+                        ),
+                        el('p', { className: 'dfr-block-preview-description' },
+                            'Besucher können hier ihre Bewertung abgeben. Das Widget wird auf der Frontend-Seite angezeigt.'
+                        ),
+                        el('span', { 
+                            className: 'dfr-block-theme-badge ' + (theme === 'stars' ? 'stars' : theme === 'thumbs' ? 'thumbs' : '')
+                        },
+                            getThemeLabel()
+                        ),
+                        renderPreviewIcon(),
+                        el('div', { style: { marginTop: '15px', fontSize: '0.85rem', color: '#666' } },
+                            el('div', {},
+                                showStats ? '✓ Mit Statistik' : '✗ Ohne Statistik'
+                            ),
+                            el('div', {},
+                                showShare ? '✓ Mit Share-Buttons' : '✗ Ohne Share-Buttons'
+                            )
+                        )
+                    )
                 )
-            );
+            ];
         },
-        save: function() { return null; }
+
+        save: function() {
+            // Server-side rendering
+            return null;
+        }
     });
+
 })(
     window.wp.blocks,
     window.wp.element,
