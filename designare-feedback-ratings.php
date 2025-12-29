@@ -61,6 +61,7 @@ class Designare_Feedback_Ratings {
 
     public function activate() {
         $default_options = [
+            'rating_theme' => 'thumbs', 
             'auto_append' => true,
             'post_types' => ['post'],
             'show_stats_bar' => true,
