@@ -44,26 +44,31 @@ $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
         </div>
         
         <div class="dfr-stars-distribution">
+            <?php
+            $pos_width = esc_attr($percentages['positive']);
+            $neu_width = esc_attr($percentages['neutral']);
+            $neg_width = esc_attr($percentages['negative']);
+            ?>
             <div class="dfr-dist-row">
                 <span class="dfr-dist-label">5★</span>
                 <div class="dfr-dist-bar">
-                    <div class="dfr-dist-fill" style="width:<?php echo esc_attr($percentages['positive']); ?>%"></div>
+                    <div class="dfr-dist-fill" style="width:<?php echo $pos_width; ?>%"></div>
                 </div>
                 <span class="dfr-dist-percent"><?php echo esc_html($percentages['positive']); ?>%</span>
             </div>
             <div class="dfr-dist-row">
                 <span class="dfr-dist-label">3★</span>
                 <div class="dfr-dist-bar">
-                    <div class="dfr-dist-fill" style="width:<?php echo esc_attr($percentages['neutral']); ?>%"></div>
+                    <div class="dfr-dist-fill" style="width:<?php echo $neu_width; ?>%"></div>
                 </div>
                 <span class="dfr-dist-percent"><?php echo esc_html($percentages['neutral']); ?>%</span>
             </div>
             <div class="dfr-dist-row">
                 <span class="dfr-dist-label">1★</span>
                 <div class="dfr-dist-bar">
-                    <div class="dfr-dist-fill" style="width:<?php echo esc_attr($percentages['negative']); ?>%"></div>
+                    <div class="dfr-dist-fill" style="width:<?php echo $neg_width; ?>%"></div>
                 </div>
-                <span class="dfr-dist-percent"><?php echo esc_html($percentages['negative']); %>%</span>
+                <span class="dfr-dist-percent"><?php echo esc_html($percentages['negative']); ?>%</span>
             </div>
         </div>
         <?php endif; ?>
