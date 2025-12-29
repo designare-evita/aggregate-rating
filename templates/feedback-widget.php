@@ -8,7 +8,6 @@ $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
     <div class="dfr-feedback-container">
         <p class="dfr-feedback-title"><?php echo esc_html($options['text_title'] ?? 'War dieser Artikel hilfreich?'); ?></p>
         
-        <!-- HONEYPOT FIELD - Versteckt vor Menschen, sichtbar für Bots -->
         <div class="dfr-hp-wrap" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
             <label for="dfr_honeypot_field">Bitte nicht ausfüllen</label>
             <input type="text" name="dfr_honeypot_field" id="dfr_honeypot_field" value="" tabindex="-1" autocomplete="off">
@@ -37,9 +36,9 @@ $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
         
         <?php if ($show_stats && !empty($options['show_stats_bar'])) : ?>
         <div class="dfr-ratio-bar">
-            <div class="dfr-ratio-segment dfr-pos" style="width: <?php echo esc_attr($percentages['positive']); ?>%;"></div>
-            <div class="dfr-ratio-segment dfr-neu" style="width: <?php echo esc_attr($percentages['neutral']); ?>%;"></div>
-            <div class="dfr-ratio-segment dfr-neg" style="width: <?php echo esc_attr($percentages['negative']); ?>%;"></div>
+            <div class="dfr-ratio-segment dfr-pos" style="width:<?php echo esc_attr($percentages['positive']); ?>%"></div>
+            <div class="dfr-ratio-segment dfr-neu" style="width:<?php echo esc_attr($percentages['neutral']); ?>%"></div>
+            <div class="dfr-ratio-segment dfr-neg" style="width:<?php echo esc_attr($percentages['negative']); ?>%"></div>
         </div>
         <div class="dfr-rating-labels">
             <?php if ($total > 0) : ?>
