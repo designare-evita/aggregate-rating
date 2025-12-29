@@ -221,34 +221,39 @@ class Designare_Feedback_Ratings {
         echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . '</script>' . "\n";
     }
 
-    public function render_feedback_widget($atts = []) {
-        $atts = shortcode_atts([
-            'post_id' => get_the_ID(),
-            'show_stats' => true,
-            'showStats' => true,
-            'show_share' => true,
-            'showShare' => true,
-        ], $atts, 'feedback_rating');
+public function render_feedback_widget($atts = []) {
+    $atts = shortcode_atts([
+        'post_id' => get_the_ID(),
+        'show_stats' => true,
+        'showStats' => true,
+        'show_share' => true,
+        'showShare' => true,
+    ], $atts, 'feedback_rating');
 
-        $atts['show_stats'] = $atts['show_stats'] && $atts['showStats'];
-        $atts['show_share'] = $atts['show_share'] && $atts['showShare'];
+    $atts['show_stats'] = $atts['show_stats'] && $atts['showStats'];
+    $atts['show_share'] = $atts['show_share'] && $atts['showShare'];
 
-        $post_id = intval($atts['post_id']);
-        $ratings = $this->get_ratings($post_id);
-        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+    $post_id = intval($atts['post_id']);
+    $options = get_option('dfr_options', []);
+    $theme = $options['rating_theme'] ?? 'thumbs';
+    
+    $ratings = $this->get_ratings($post_id);
+    $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
 
-        $percentages = [
-            'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
-            'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
-            'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
-        ];
+    $percentages = [
+        'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
+        'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
+        'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
+    ];
 
-        $options = get_option('dfr_options', []);
-
-        ob_start();
+    ob_start();
+    if ($theme === 'stars') {
+        include DFR_PLUGIN_DIR . 'templates/feedback-widget-stars.php';
+    } else {
         include DFR_PLUGIN_DIR . 'templates/feedback-widget.php';
-        return ob_get_clean();
     }
+    return ob_get_clean();
+}
 
     public function auto_append_widget($content) {
         if (!is_singular() || !is_main_query() || !in_the_loop()) return $content;
