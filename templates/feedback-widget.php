@@ -39,7 +39,7 @@ $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
         <div class="dfr-ratio-bar">
             <div class="dfr-ratio-segment dfr-pos" style="width: <?php echo esc_attr($percentages['positive']); ?>%;"></div>
             <div class="dfr-ratio-segment dfr-neu" style="width: <?php echo esc_attr($percentages['neutral']); ?>%;"></div>
-            <div class="dfr-ratio-segment dfr-neg" style="width: <?php echo esc_attr($percentages['negative']); %>%;"></div>
+            <div class="dfr-ratio-segment dfr-neg" style="width: <?php echo esc_attr($percentages['negative']); ?>%;"></div>
         </div>
         <div class="dfr-rating-labels">
             <?php if ($total > 0) : ?>
