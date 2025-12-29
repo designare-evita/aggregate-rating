@@ -1,11 +1,5 @@
 <?php if (!defined('ABSPATH')) exit; 
 
-// Chart-Daten abrufen
-$instance = Designare_Feedback_Ratings::get_instance();
-$chart_method = new ReflectionMethod($instance, 'get_chart_data');
-$chart_method->setAccessible(true);
-$data = $chart_method->invoke($instance);
-
 $summary = $data['summary'] ?? ['total' => 0, 'positive' => 0, 'neutral' => 0, 'negative' => 0, 'avgRating' => 0];
 ?>
 
