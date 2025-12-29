@@ -57,17 +57,19 @@
     }
 
     function updateStarsDisplay($widget, pct, total) {
-        $widget.find('.dfr-dist-fill').each(function(i) {
-            var w = i === 0 ? pct.positive : (i === 1 ? pct.neutral : pct.negative);
-            $(this).css('width', w + '%');
-        });
-        $widget.find('.dfr-dist-percent').each(function(i) {
-            var p = i === 0 ? pct.positive : (i === 1 ? pct.neutral : pct.negative);
-            $(this).text(p + '%');
-        });
+        var $distFills = $widget.find('.dfr-dist-fill');
+        var $distPercents = $widget.find('.dfr-dist-percent');
+        
+        $distFills.eq(0).css('width', pct.positive + '%');
+        $distFills.eq(1).css('width', pct.neutral + '%');
+        $distFills.eq(2).css('width', pct.negative + '%');
+        
+        $distPercents.eq(0).text(pct.positive + '%');
+        $distPercents.eq(1).text(pct.neutral + '%');
+        $distPercents.eq(2).text(pct.negative + '%');
     }
 
-    // THUMBS SYSTEM (Original)
+    // THUMBS SYSTEM
     function initRatingButtons($widget, postId) {
         $widget.on('click', '.dfr-rating-btn', function(e) {
             e.preventDefault();
@@ -128,12 +130,11 @@
         });
     }
 
-    // STARS SYSTEM (Neu)
+    // STARS SYSTEM
     function initStarRating($widget, postId) {
         var $stars = $widget.find('.dfr-star-btn');
         var hoverRating = 0;
         
-        // Hover-Effekt
         $stars.on('mouseenter', function() {
             hoverRating = parseInt($(this).data('rating'));
             highlightStars($stars, hoverRating);
@@ -144,7 +145,6 @@
             highlightStars($stars, 0);
         });
         
-        // Click-Handler
         $stars.on('click', function(e) {
             e.preventDefault();
             
