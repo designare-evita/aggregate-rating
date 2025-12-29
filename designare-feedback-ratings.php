@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Designare Feedback Ratings
  * Plugin URI: https://designare.at
- * Description: Sammelt Besucher-Feedback und generiert automatisch Schema.org AggregateRating für besseres SEO. Mit Gutenberg Block, E-Mail-Alerts und Dashboard-Statistiken.
+ * Description: Sammelt Besucher-Feedback mit 2 Themes (Thumbs & Sterne) und generiert automatisch Schema.org AggregateRating für besseres SEO.
  * Version: 2.1.0
  * Author: Michael Kanda
  * Author URI: https://designare.at
@@ -39,7 +39,12 @@ class Designare_Feedback_Ratings {
         add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
         add_action('wp_head', [$this, 'inject_schema_json_ld'], 5);
         add_action('wp_head', [$this, 'inject_custom_styles'], 20);
+        
+        // Drei Shortcodes
         add_shortcode('feedback_rating', [$this, 'render_feedback_widget']);
+        add_shortcode('feedback_thumbs', [$this, 'render_thumbs_widget']);
+        add_shortcode('feedback_stars', [$this, 'render_stars_widget']);
+        
         add_filter('the_content', [$this, 'auto_append_widget']);
 
         add_action('init', [$this, 'register_gutenberg_block']);
@@ -61,7 +66,7 @@ class Designare_Feedback_Ratings {
 
     public function activate() {
         $default_options = [
-            'rating_theme' => 'thumbs', 
+            'rating_theme' => 'thumbs',
             'auto_append' => true,
             'post_types' => ['post'],
             'show_stats_bar' => true,
@@ -69,13 +74,12 @@ class Designare_Feedback_Ratings {
             'rate_limit_minutes' => 60,
             'email_alerts' => false,
             'alert_email' => get_option('admin_email'),
-            'primary_color' => '#FCB500',
+            'primary_color' => '#C4A35A',
             'positive_color' => '#51cf66',
-            'neutral_color' => '#FCB500',
+            'neutral_color' => '#C4A35A',
             'negative_color' => '#ff6b6b',
-            'border_radius' => '10',
+            'border_radius' => '0',
             'button_style' => 'default',
-            // Texte & Lokalisierung
             'custom_css' => '',
             'text_title' => 'War dieser Artikel hilfreich?',
             'text_pos' => 'Hilfreich',
@@ -118,6 +122,7 @@ class Designare_Feedback_Ratings {
             'attributes' => [
                 'showStats' => ['type' => 'boolean', 'default' => true],
                 'showShare' => ['type' => 'boolean', 'default' => true],
+                'theme' => ['type' => 'string', 'default' => ''],
             ]
         ]);
     }
@@ -154,18 +159,17 @@ class Designare_Feedback_Ratings {
         if (!$this->should_load_on_current_page()) return;
         
         $options = get_option('dfr_options', []);
-        $primary = $options['primary_color'] ?? '#FCB500';
+        $primary = $options['primary_color'] ?? '#C4A35A';
         $positive = $options['positive_color'] ?? '#51cf66';
-        $neutral = $options['neutral_color'] ?? '#FCB500';
+        $neutral = $options['neutral_color'] ?? '#C4A35A';
         $negative = $options['negative_color'] ?? '#ff6b6b';
-        $radius = $options['border_radius'] ?? '10';
+        $radius = $options['border_radius'] ?? '0';
         $style = $options['button_style'] ?? 'default';
         
         $btn_radius = $style === 'pill' ? '50px' : $radius . 'px';
         
         echo "<style>\n:root{--dfr-primary:{$primary};--dfr-positive:{$positive};--dfr-neutral:{$neutral};--dfr-negative:{$negative};--dfr-radius:{$radius}px;--dfr-btn-radius:{$btn_radius};}\n";
         
-        // Custom CSS hinzufügen
         if (!empty($options['custom_css'])) {
             echo wp_strip_all_tags($options['custom_css']) . "\n";
         }
@@ -221,50 +225,58 @@ class Designare_Feedback_Ratings {
         echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . '</script>' . "\n";
     }
 
-public function render_feedback_widget($atts = []) {
-    $atts = shortcode_atts([
-        'post_id' => get_the_ID(),
-        'show_stats' => true,
-        'showStats' => true,
-        'show_share' => true,
-        'showShare' => true,
-        'theme' => '', // NEU: Theme-Override
-    ], $atts, 'feedback_rating');
+    public function render_feedback_widget($atts = []) {
+        $atts = shortcode_atts([
+            'post_id' => get_the_ID(),
+            'show_stats' => true,
+            'showStats' => true,
+            'show_share' => true,
+            'showShare' => true,
+            'theme' => '',
+        ], $atts, 'feedback_rating');
 
-    $atts['show_stats'] = $atts['show_stats'] && $atts['showStats'];
-    $atts['show_share'] = $atts['show_share'] && $atts['showShare'];
+        $atts['show_stats'] = $atts['show_stats'] && $atts['showStats'];
+        $atts['show_share'] = $atts['show_share'] && $atts['showShare'];
 
-    $post_id = intval($atts['post_id']);
-    $options = get_option('dfr_options', []);
-    
-    // Theme bestimmen: 1. Shortcode-Parameter, 2. Einstellungen, 3. Default
-    if (!empty($atts['theme']) && in_array($atts['theme'], ['thumbs', 'stars'])) {
-        $theme = $atts['theme'];
-    } else {
-        $theme = $options['rating_theme'] ?? 'thumbs';
+        $post_id = intval($atts['post_id']);
+        $options = get_option('dfr_options', []);
+        
+        if (!empty($atts['theme']) && in_array($atts['theme'], ['thumbs', 'stars'])) {
+            $theme = $atts['theme'];
+        } else {
+            $theme = $options['rating_theme'] ?? 'thumbs';
+        }
+        
+        $ratings = $this->get_ratings($post_id);
+        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+
+        $percentages = [
+            'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
+            'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
+            'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
+        ];
+
+        $score = ($ratings['positive'] * 5) + ($ratings['neutral'] * 3) + ($ratings['negative'] * 1);
+        $average = $total > 0 ? round($score / $total, 1) : 0;
+
+        ob_start();
+        if ($theme === 'stars') {
+            include DFR_PLUGIN_DIR . 'templates/feedback-widget-stars.php';
+        } else {
+            include DFR_PLUGIN_DIR . 'templates/feedback-widget.php';
+        }
+        return ob_get_clean();
     }
-    
-    $ratings = $this->get_ratings($post_id);
-    $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
 
-    $percentages = [
-        'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
-        'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
-        'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
-    ];
-
-    // Durchschnitt für Sterne-System
-    $score = ($ratings['positive'] * 5) + ($ratings['neutral'] * 3) + ($ratings['negative'] * 1);
-    $average = $total > 0 ? round($score / $total, 1) : 0;
-
-    ob_start();
-    if ($theme === 'stars') {
-        include DFR_PLUGIN_DIR . 'templates/feedback-widget-stars.php';
-    } else {
-        include DFR_PLUGIN_DIR . 'templates/feedback-widget.php';
+    public function render_thumbs_widget($atts = []) {
+        $atts['theme'] = 'thumbs';
+        return $this->render_feedback_widget($atts);
     }
-    return ob_get_clean();
-}
+
+    public function render_stars_widget($atts = []) {
+        $atts['theme'] = 'stars';
+        return $this->render_feedback_widget($atts);
+    }
 
     public function auto_append_widget($content) {
         if (!is_singular() || !is_main_query() || !in_the_loop()) return $content;
@@ -278,76 +290,70 @@ public function render_feedback_widget($atts = []) {
         return $content . $this->render_feedback_widget();
     }
 
-public function handle_vote() {
-    // 1. HONEYPOT CHECK
-    if (!empty($_POST['hp_field'])) {
-        wp_send_json_error(['message' => 'Spam erkannt.'], 403);
-    }
-
-    // 2. Sicherheitscheck
-    if (!check_ajax_referer('dfr_vote_nonce', 'nonce', false)) {
-        wp_send_json_error(['message' => 'Sicherheitscheck fehlgeschlagen.'], 403);
-    }
-
-    // 3. Rate Limiting
-    if ($this->is_rate_limited()) {
-        wp_send_json_error(['message' => 'Bitte warte etwas.'], 429);
-    }
-
-    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
-    $vote = isset($_POST['vote']) ? sanitize_text_field($_POST['vote']) : '';
-    
-    // NEU: Unterstützung für Sterne (1-5)
-    $star_rating = isset($_POST['star_rating']) ? intval($_POST['star_rating']) : 0;
-
-    if (!$post_id) {
-        wp_send_json_error(['message' => 'Ungültige Anfrage.'], 400);
-    }
-
-    // Sterne-Validierung
-    if ($star_rating > 0) {
-        if ($star_rating < 1 || $star_rating > 5) {
-            wp_send_json_error(['message' => 'Ungültige Bewertung.'], 400);
+    public function handle_vote() {
+        if (!empty($_POST['hp_field'])) {
+            wp_send_json_error(['message' => 'Spam erkannt.'], 403);
         }
-        // Sterne in Thumbs-System konvertieren
-        if ($star_rating >= 4) $vote = 'positive';
-        elseif ($star_rating >= 2) $vote = 'neutral';
-        else $vote = 'negative';
+
+        if (!check_ajax_referer('dfr_vote_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => 'Sicherheitscheck fehlgeschlagen.'], 403);
+        }
+
+        if ($this->is_rate_limited()) {
+            wp_send_json_error(['message' => 'Bitte warte etwas.'], 429);
+        }
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        $vote = isset($_POST['vote']) ? sanitize_text_field($_POST['vote']) : '';
+        $star_rating = isset($_POST['star_rating']) ? intval($_POST['star_rating']) : 0;
+
+        if (!$post_id) {
+            wp_send_json_error(['message' => 'Ungültige Anfrage.'], 400);
+        }
+
+        if ($star_rating > 0) {
+            if ($star_rating < 1 || $star_rating > 5) {
+                wp_send_json_error(['message' => 'Ungültige Bewertung.'], 400);
+            }
+            if ($star_rating >= 4) $vote = 'positive';
+            elseif ($star_rating >= 2) $vote = 'neutral';
+            else $vote = 'negative';
+        }
+
+        if (!in_array($vote, ['positive', 'neutral', 'negative'])) {
+            wp_send_json_error(['message' => 'Ungültige Anfrage.'], 400);
+        }
+
+        if (!get_post($post_id)) {
+            wp_send_json_error(['message' => 'Beitrag nicht gefunden.'], 404);
+        }
+
+        $ratings = $this->get_ratings($post_id);
+        $ratings[$vote]++;
+        
+        update_post_meta($post_id, self::META_KEY, $ratings);
+        delete_transient(self::CACHE_PREFIX . $post_id);
+        $this->set_rate_limit();
+
+        if ($vote === 'negative') {
+            $this->maybe_send_alert_email($post_id, $ratings);
+        }
+
+        $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
+        $percentages = [
+            'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
+            'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
+            'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
+        ];
+
+        wp_send_json_success([
+            'stats' => $ratings, 
+            'total' => $total, 
+            'percentages' => $percentages,
+            'star_rating' => $star_rating
+        ]);
     }
 
-    if (!in_array($vote, ['positive', 'neutral', 'negative'])) {
-        wp_send_json_error(['message' => 'Ungültige Anfrage.'], 400);
-    }
-
-    if (!get_post($post_id)) {
-        wp_send_json_error(['message' => 'Beitrag nicht gefunden.'], 404);
-    }
-
-    $ratings = $this->get_ratings($post_id);
-    $ratings[$vote]++;
-    
-    update_post_meta($post_id, self::META_KEY, $ratings);
-    delete_transient(self::CACHE_PREFIX . $post_id);
-    $this->set_rate_limit();
-
-    if ($vote === 'negative') {
-        $this->maybe_send_alert_email($post_id, $ratings);
-    }
-
-    $total = $ratings['positive'] + $ratings['neutral'] + $ratings['negative'];
-    $percentages = [
-        'positive' => $total > 0 ? round(($ratings['positive'] / $total) * 100) : 0,
-        'neutral' => $total > 0 ? round(($ratings['neutral'] / $total) * 100) : 0,
-        'negative' => $total > 0 ? round(($ratings['negative'] / $total) * 100) : 0,
-    ];
-
-    wp_send_json_success([
-        'stats' => $ratings, 
-        'total' => $total, 
-        'percentages' => $percentages,
-        'star_rating' => $star_rating
-    ]);
-}
     public function handle_get_stats() {
         $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
         if (!$post_id) wp_send_json_error(['message' => 'Post ID fehlt.'], 400);
@@ -508,49 +514,49 @@ public function handle_vote() {
         echo "<ul><li>👍 {$ratings['positive']}</li><li>😐 {$ratings['neutral']}</li><li>👎 {$ratings['negative']}</li></ul></div>";
     }
 
-    public function render_dashboard_page() { include DFR_PLUGIN_DIR . 'templates/dashboard-page.php'; }
-
-public function render_settings_page() {
-    if (isset($_POST['dfr_save_settings']) && check_admin_referer('dfr_settings_nonce')) {
-        $options = [
-            'rating_theme' => sanitize_text_field($_POST['rating_theme'] ?? 'thumbs'), // WICHTIG: Zuerst!
-            'auto_append' => isset($_POST['auto_append']),
-            'post_types' => isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : ['post'],
-            'show_stats_bar' => isset($_POST['show_stats_bar']),
-            'enable_schema' => isset($_POST['enable_schema']),
-            'rate_limit_minutes' => intval($_POST['rate_limit_minutes'] ?? 60),
-            'email_alerts' => isset($_POST['email_alerts']),
-            'alert_email' => sanitize_email($_POST['alert_email'] ?? ''),
-            'primary_color' => sanitize_hex_color($_POST['primary_color'] ?? '#C4A35A'),
-            'positive_color' => sanitize_hex_color($_POST['positive_color'] ?? '#51cf66'),
-            'neutral_color' => sanitize_hex_color($_POST['neutral_color'] ?? '#C4A35A'),
-            'negative_color' => sanitize_hex_color($_POST['negative_color'] ?? '#ff6b6b'),
-            'border_radius' => intval($_POST['border_radius'] ?? 0),
-            'button_style' => sanitize_text_field($_POST['button_style'] ?? 'default'),
-            'custom_css' => wp_strip_all_tags($_POST['custom_css'] ?? ''),
-            'text_title' => sanitize_text_field($_POST['text_title'] ?? ''),
-            'text_pos' => sanitize_text_field($_POST['text_pos'] ?? ''),
-            'text_neu' => sanitize_text_field($_POST['text_neu'] ?? ''),
-            'text_neg' => sanitize_text_field($_POST['text_neg'] ?? ''),
-            'text_saving' => sanitize_text_field($_POST['text_saving'] ?? ''),
-            'text_thanks' => sanitize_text_field($_POST['text_thanks'] ?? ''),
-            'text_already_voted' => sanitize_text_field($_POST['text_already_voted'] ?? ''),
-            'text_error' => sanitize_text_field($_POST['text_error'] ?? ''),
-            'text_helpful_label' => sanitize_text_field($_POST['text_helpful_label'] ?? ''),
-            'text_votes_label' => sanitize_text_field($_POST['text_votes_label'] ?? ''),
-            'text_no_votes' => sanitize_text_field($_POST['text_no_votes'] ?? ''),
-            'text_be_first' => sanitize_text_field($_POST['text_be_first'] ?? ''),
-        ];
-        update_option('dfr_options', $options);
-        
-        // Cache leeren
-        wp_cache_flush();
-        
-        echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Einstellungen gespeichert!</strong> Theme: ' . esc_html($options['rating_theme']) . '</p></div>';
+    public function render_dashboard_page() { 
+        include DFR_PLUGIN_DIR . 'templates/dashboard-page.php'; 
     }
-    $options = get_option('dfr_options', []);
-    include DFR_PLUGIN_DIR . 'templates/settings-page.php';
-}
+
+    public function render_settings_page() {
+        if (isset($_POST['dfr_save_settings']) && check_admin_referer('dfr_settings_nonce')) {
+            $options = [
+                'rating_theme' => sanitize_text_field($_POST['rating_theme'] ?? 'thumbs'),
+                'auto_append' => isset($_POST['auto_append']),
+                'post_types' => isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : ['post'],
+                'show_stats_bar' => isset($_POST['show_stats_bar']),
+                'enable_schema' => isset($_POST['enable_schema']),
+                'rate_limit_minutes' => intval($_POST['rate_limit_minutes'] ?? 60),
+                'email_alerts' => isset($_POST['email_alerts']),
+                'alert_email' => sanitize_email($_POST['alert_email'] ?? ''),
+                'primary_color' => sanitize_hex_color($_POST['primary_color'] ?? '#C4A35A'),
+                'positive_color' => sanitize_hex_color($_POST['positive_color'] ?? '#51cf66'),
+                'neutral_color' => sanitize_hex_color($_POST['neutral_color'] ?? '#C4A35A'),
+                'negative_color' => sanitize_hex_color($_POST['negative_color'] ?? '#ff6b6b'),
+                'border_radius' => intval($_POST['border_radius'] ?? 0),
+                'button_style' => sanitize_text_field($_POST['button_style'] ?? 'default'),
+                'custom_css' => wp_strip_all_tags($_POST['custom_css'] ?? ''),
+                'text_title' => sanitize_text_field($_POST['text_title'] ?? ''),
+                'text_pos' => sanitize_text_field($_POST['text_pos'] ?? ''),
+                'text_neu' => sanitize_text_field($_POST['text_neu'] ?? ''),
+                'text_neg' => sanitize_text_field($_POST['text_neg'] ?? ''),
+                'text_saving' => sanitize_text_field($_POST['text_saving'] ?? ''),
+                'text_thanks' => sanitize_text_field($_POST['text_thanks'] ?? ''),
+                'text_already_voted' => sanitize_text_field($_POST['text_already_voted'] ?? ''),
+                'text_error' => sanitize_text_field($_POST['text_error'] ?? ''),
+                'text_helpful_label' => sanitize_text_field($_POST['text_helpful_label'] ?? ''),
+                'text_votes_label' => sanitize_text_field($_POST['text_votes_label'] ?? ''),
+                'text_no_votes' => sanitize_text_field($_POST['text_no_votes'] ?? ''),
+                'text_be_first' => sanitize_text_field($_POST['text_be_first'] ?? ''),
+            ];
+            update_option('dfr_options', $options);
+            wp_cache_flush();
+            echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Einstellungen gespeichert!</strong> Theme: ' . esc_html($options['rating_theme']) . '</p></div>';
+        }
+        $options = get_option('dfr_options', []);
+        include DFR_PLUGIN_DIR . 'templates/settings-page.php';
+    }
+
     public function register_rest_routes() {
         register_rest_route('dfr/v1', '/ratings/(?P<id>\d+)', [
             'methods' => 'GET', 'callback' => [$this, 'rest_get_ratings'], 'permission_callback' => '__return_true',
