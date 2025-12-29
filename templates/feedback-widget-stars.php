@@ -3,6 +3,12 @@ if (!defined('ABSPATH')) exit;
 $options = get_option('dfr_options', []);
 $show_stats = filter_var($atts['show_stats'] ?? true, FILTER_VALIDATE_BOOLEAN);
 $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
+
+// Icons bestimmen
+$use_custom = !empty($options['use_custom_icons']);
+$icon_size = $options['icon_size'] ?? 32;
+$icon_empty = $options['icon_star_empty'] ?? '';
+$icon_filled = $options['icon_star_filled'] ?? '';
 ?>
 <aside class="dfr-feedback-section dfr-stars-theme" data-post-id="<?php echo esc_attr($post_id); ?>">
     <div class="dfr-feedback-container">
@@ -17,9 +23,23 @@ $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
             <div class="dfr-stars-rating">
                 <?php for ($i = 1; $i <= 5; $i++) : ?>
                 <button class="dfr-star-btn" data-rating="<?php echo $i; ?>" type="button" aria-label="<?php echo $i; ?> Stern<?php echo $i > 1 ? 'e' : ''; ?>">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
+                    <?php if ($use_custom && !empty($icon_empty)) : ?>
+                        <img src="<?php echo esc_url($icon_empty); ?>" 
+                             alt="Stern" 
+                             width="<?php echo esc_attr($icon_size); ?>" 
+                             height="<?php echo esc_attr($icon_size); ?>"
+                             class="dfr-custom-icon dfr-star-empty">
+                        <img src="<?php echo esc_url($icon_filled); ?>" 
+                             alt="Stern gefüllt" 
+                             width="<?php echo esc_attr($icon_size); ?>" 
+                             height="<?php echo esc_attr($icon_size); ?>"
+                             class="dfr-custom-icon dfr-star-filled" 
+                             style="display:none;">
+                    <?php else : ?>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    <?php endif; ?>
                 </button>
                 <?php endfor; ?>
             </div>
@@ -31,9 +51,17 @@ $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
                 <span class="dfr-avg-rating"><?php echo esc_html($average); ?></span>
                 <span class="dfr-avg-stars">
                     <?php for ($i = 1; $i <= 5; $i++) : ?>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="<?php echo $i <= round($average) ? 'currentColor' : 'none'; ?>" stroke="currentColor" stroke-width="2">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                        </svg>
+                        <?php if ($use_custom && !empty($icon_empty)) : ?>
+                            <img src="<?php echo $i <= round($average) ? esc_url($icon_filled) : esc_url($icon_empty); ?>" 
+                                 alt="Stern" 
+                                 width="16" 
+                                 height="16"
+                                 class="dfr-custom-icon-small">
+                        <?php else : ?>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="<?php echo $i <= round($average) ? 'currentColor' : 'none'; ?>" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                        <?php endif; ?>
                     <?php endfor; ?>
                 </span>
                 <span class="dfr-avg-count">(<?php echo esc_html($total); ?> <?php echo esc_html($options['text_votes_label'] ?? 'Bewertungen'); ?>)</span>
