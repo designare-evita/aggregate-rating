@@ -1,38 +1,170 @@
-/**
- * Gutenberg Block Editor Styles
- */
-.dfr-block-preview {
-    padding: 20px;
-    background: #f0f0f0;
-    border-radius: 8px;
-    text-align: center;
+/* ================================
+   DESIGNARE FEEDBACK RATINGS
+   Block Editor Stylesheet v2.2.0
+   ================================ */
+
+/* === BLOCK WRAPPER === */
+.wp-block-dfr-feedback-rating {
+    margin: 20px 0;
 }
+
+/* === BLOCK PREVIEW === */
+.dfr-block-preview {
+    background: #fff;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.dfr-block-preview-icon {
+    width: 64px;
+    height: 64px;
+    color: #C4A35A;
+}
+
 .dfr-block-preview-title {
-    font-size: 14px;
+    margin: 0;
+    font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 15px;
     color: #1e1e1e;
 }
+
+.dfr-block-preview-description {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #757575;
+    max-width: 400px;
+}
+
 .dfr-block-preview-buttons {
     display: flex;
-    justify-content: center;
     gap: 10px;
-    flex-wrap: wrap;
+    margin-top: 10px;
 }
+
 .dfr-block-preview-btn {
     padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 13px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
     background: #fff;
-    border: 1px solid #ddd;
-    display: inline-block;
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
-.dfr-block-preview-btn.pos { border-color: #00a32a; color: #00a32a; }
-.dfr-block-preview-btn.neu { border-color: #dba617; color: #dba617; }
-.dfr-block-preview-btn.neg { border-color: #d63638; color: #d63638; }
-.dfr-block-preview-btn.star { 
-    border-color: #C4A35A; 
-    color: #C4A35A; 
-    font-size: 18px;
-    padding: 6px 8px;
+
+.dfr-block-preview-btn.positive {
+    border-color: #51cf66;
+    color: #51cf66;
+}
+
+.dfr-block-preview-btn.neutral {
+    border-color: #C4A35A;
+    color: #C4A35A;
+}
+
+.dfr-block-preview-btn.negative {
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+}
+
+/* === STARS PREVIEW === */
+.dfr-block-preview-stars {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.dfr-block-preview-star {
+    width: 32px;
+    height: 32px;
+    color: #C4A35A;
+}
+
+/* === THEME BADGE === */
+.dfr-block-theme-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #f0f0f0;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dfr-block-theme-badge.thumbs {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.dfr-block-theme-badge.stars {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+/* === INSPECTOR CONTROLS === */
+.dfr-block-inspector {
+    padding: 16px;
+}
+
+.dfr-block-inspector .components-base-control {
+    margin-bottom: 20px;
+}
+
+.dfr-block-inspector .components-radio-control__option {
+    margin-bottom: 12px;
+}
+
+/* === HOVER STATES === */
+.dfr-block-preview:hover {
+    border-color: #2271b1;
+    background: #f9f9f9;
+}
+
+.dfr-block-preview-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* === SELECTED STATE === */
+.is-selected .dfr-block-preview {
+    border-color: #2271b1;
+    border-style: solid;
+    background: #f0f6fc;
+}
+
+/* === DARK MODE === */
+@media (prefers-color-scheme: dark) {
+    .dfr-block-preview {
+        background: #1e1e1e;
+        border-color: #444;
+    }
+    
+    .dfr-block-preview-title {
+        color: #f0f0f0;
+    }
+    
+    .dfr-block-preview-description {
+        color: #aaa;
+    }
+    
+    .dfr-block-preview-btn {
+        background: #2a2a2a;
+        border-color: #444;
+    }
+    
+    .is-selected .dfr-block-preview {
+        background: #1a3a52;
+        border-color: #2271b1;
+    }
 }
