@@ -71,6 +71,7 @@ class Designare_Feedback_Ratings {
             'post_types' => ['post'],
             'show_stats_bar' => true,
             'enable_schema' => true,
+            'schema_type' => 'Article',
             'rate_limit_minutes' => 60,
             'email_alerts' => false,
             'alert_email' => get_option('admin_email'),
@@ -212,10 +213,14 @@ class Designare_Feedback_Ratings {
 
         $score = ($ratings['positive'] * 5) + ($ratings['neutral'] * 3) + ($ratings['negative'] * 1);
         $average = round($score / $total, 1);
+        
+        // Schema-Typ aus Einstellungen (Standard: Article)
+        $schema_type = $options['schema_type'] ?? 'Article';
 
         $schema = [
             '@context' => 'https://schema.org',
-            '@type' => 'Article',
+            '@type' => $schema_type,
+            'name' => get_the_title(),
             'headline' => get_the_title(),
             'url' => get_permalink(),
             'datePublished' => get_the_date('c'),
@@ -232,7 +237,7 @@ class Designare_Feedback_Ratings {
 
         $schema = apply_filters('dfr_schema_json_ld', $schema, $post_id, $ratings);
 
-        echo "\n<!-- Designare Feedback Ratings -->\n";
+        echo "\n<!-- Designare Feedback Ratings (Schema Type: {$schema_type}) -->\n";
         echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . '</script>' . "\n";
     }
 
@@ -588,6 +593,7 @@ class Designare_Feedback_Ratings {
                 'post_types' => isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : ['post'],
                 'show_stats_bar' => isset($_POST['show_stats_bar']),
                 'enable_schema' => isset($_POST['enable_schema']),
+                'schema_type' => sanitize_text_field($_POST['schema_type'] ?? 'Article'),
                 'rate_limit_minutes' => intval($_POST['rate_limit_minutes'] ?? 60),
                 'email_alerts' => isset($_POST['email_alerts']),
                 'alert_email' => sanitize_email($_POST['alert_email'] ?? ''),
