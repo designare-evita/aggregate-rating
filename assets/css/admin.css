@@ -1,80 +1,63 @@
 /* ================================
-   FORCE LIGHT BACKGROUND FOR ADMIN
+   DESIGNARE FEEDBACK RATINGS
+   Admin Stylesheet v2.2.0
+   WordPress Standard Design
    ================================ */
 
+/* === GLOBAL RESETS === */
+.dfr-settings-wrap *,
+.dfr-dashboard * {
+    box-sizing: border-box;
+}
+
+/* === MAIN WRAPPER === */
 .dfr-settings-wrap,
 .dfr-dashboard {
-    background: #f0f0f1 !important;
-    min-height: 100vh;
+    max-width: 1400px;
+    margin: 20px 20px 20px 0;
 }
 
-.wrap.dfr-settings-wrap,
-.wrap.dfr-dashboard {
-    background: #f0f0f1 !important;
-}
-
-/* Force white cards */
-.dfr-card {
-    background: #fff !important;
-    border: 1px solid #ccd0d4 !important;
-    color: #1d2327 !important;
-}
-
-.dfr-card h2 {
-    color: #1d2327 !important;
-}
-
-.dfr-field > label {
-    color: #1d2327 !important;
-}
-
-.dfr-field .description {
-    color: #646970 !important;
-}
-
-/* Override WordPress dark mode for our plugin */
-@media (prefers-color-scheme: dark) {
-    .dfr-settings-wrap,
-    .dfr-dashboard {
-        background: #f0f0f1 !important;
-    }
-    
-    .dfr-card {
-        background: #fff !important;
-        border-color: #ccd0d4 !important;
-        color: #1d2327 !important;
-    }
-}
-/* === SETTINGS WRAP === */
-.dfr-settings-wrap {
-    max-width: 1200px;
-}
-
-.dfr-settings-wrap h1 {
+.dfr-settings-wrap h1,
+.dfr-dashboard h1 {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 30px;
+    gap: 12px;
+    font-size: 23px;
+    font-weight: 400;
+    margin: 0 0 20px;
+    padding: 9px 0;
+    line-height: 1.3;
+    color: #1d2327;
 }
 
 /* === CARDS === */
 .dfr-card {
     background: #fff;
-    border: 1px solid #ccd0d4;
-    box-shadow: 0 1px 1px rgba(0,0,0,0.04);
-    margin-bottom: 25px;
-    padding: 25px;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    margin-bottom: 20px;
+    padding: 20px;
 }
 
 .dfr-card h2 {
-    margin: 0 0 20px;
-    padding: 0 0 15px;
-    border-bottom: 2px solid #f0f0f0;
-    font-size: 1.1rem;
+    margin: 0 0 15px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid #dcdcde;
+    font-size: 14px;
     font-weight: 600;
+    color: #1d2327;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* === FIELDS === */
+.dfr-card h3 {
+    margin: 20px 0 15px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* === FORM FIELDS === */
 .dfr-field {
     margin-bottom: 20px;
 }
@@ -86,97 +69,108 @@
 .dfr-field > label {
     display: block;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     color: #1d2327;
+    font-size: 14px;
 }
 
 .dfr-field input[type="text"],
 .dfr-field input[type="email"],
 .dfr-field input[type="number"],
+.dfr-field select {
+    width: 100%;
+    max-width: 500px;
+    padding: 6px 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 14px;
+    background: #fff;
+    color: #2c3338;
+}
+
+.dfr-field input[type="text"]:focus,
+.dfr-field input[type="email"]:focus,
+.dfr-field input[type="number"]:focus,
+.dfr-field select:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: 2px solid transparent;
+}
+
+.dfr-field input[type="checkbox"] {
+    margin: 0 6px 0 0;
+    vertical-align: middle;
+}
+
 .dfr-field textarea {
+    width: 100%;
     padding: 8px 12px;
     border: 1px solid #8c8f94;
     border-radius: 4px;
     font-size: 14px;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+    background: #fff;
+    color: #2c3338;
+    resize: vertical;
 }
 
-.dfr-field input[type="checkbox"] {
-    margin-right: 8px;
+.dfr-field textarea:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: 2px solid transparent;
 }
 
 .dfr-field .description {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     font-size: 13px;
     color: #646970;
+    font-style: normal;
 }
 
 .dfr-field .description code {
     background: #f0f0f1;
-    padding: 2px 6px;
+    padding: 2px 5px;
     border-radius: 3px;
     font-size: 12px;
+    font-family: Consolas,Monaco,monospace;
 }
 
 /* === CUSTOM CSS TEXTAREA === */
 .dfr-field textarea[name="custom_css"] {
-    width: 100%;
-    font-family: "Monaco", "Menlo", "Consolas", "Courier New", monospace;
+    font-family: Consolas,Monaco,monospace;
     font-size: 13px;
     line-height: 1.6;
-    background: #282c34;
-    color: #abb2bf;
-    padding: 15px;
-    border: 1px solid #3e4451;
-    border-radius: 4px;
-    resize: vertical;
-    min-height: 200px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
-}
-
-.dfr-field textarea[name="custom_css"]:focus {
-    outline: none;
-    border-color: #528bff;
-    box-shadow: 0 0 0 2px rgba(82, 139, 255, 0.2);
-}
-
-.dfr-field textarea[name="custom_css"]::placeholder {
-    color: #5c6370;
-    opacity: 1;
-}
-
-.dfr-field textarea[name="custom_css"]::selection {
-    background: #3e4451;
-    color: #61afef;
+    background: #f6f7f7;
+    color: #2c3338;
+    min-height: 250px;
 }
 
 /* === THEME SELECTOR === */
 .dfr-theme-selector {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    margin-top: 15px;
+    gap: 15px;
+    margin-top: 10px;
 }
 
 .dfr-theme-option {
     position: relative;
     cursor: pointer;
-    border: 2px solid #ddd;
-    border-radius: 8px;
+    border: 2px solid #c3c4c7;
+    border-radius: 4px;
     padding: 20px;
-    background: #fafafa;
-    transition: all 0.3s ease;
+    background: #fff;
+    transition: all 0.2s ease;
 }
 
 .dfr-theme-option:hover {
     border-color: #2271b1;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
 .dfr-theme-option.dfr-theme-active {
     border-color: #2271b1;
     background: #f0f6fc;
-    box-shadow: 0 0 0 1px #2271b1;
 }
 
 .dfr-theme-option input[type="radio"] {
@@ -188,25 +182,24 @@
 .dfr-theme-preview {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .dfr-theme-icon {
     display: flex;
     justify-content: center;
     gap: 8px;
-    padding: 20px 0;
+    padding: 15px 0;
 }
 
 .dfr-theme-icon svg {
-    color: #666;
-    transition: all 0.3s ease;
+    color: #646970;
+    transition: color 0.2s ease;
 }
 
 .dfr-theme-option:hover .dfr-theme-icon svg,
 .dfr-theme-option.dfr-theme-active .dfr-theme-icon svg {
     color: #2271b1;
-    transform: scale(1.1);
 }
 
 .dfr-theme-info {
@@ -215,51 +208,50 @@
 
 .dfr-theme-info strong {
     display: block;
-    font-size: 1rem;
+    font-size: 14px;
     margin-bottom: 4px;
     color: #1d2327;
 }
 
 .dfr-theme-info span {
     display: block;
-    font-size: 0.9rem;
-    color: #666;
+    font-size: 13px;
+    color: #646970;
     margin-bottom: 4px;
 }
 
 .dfr-theme-info small {
     display: block;
-    font-size: 0.8rem;
-    color: #999;
+    font-size: 12px;
+    color: #8c8f94;
 }
 
 /* === COLOR PICKER === */
 .dfr-color-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
+    gap: 12px;
     margin-top: 10px;
 }
 
 .dfr-color-field {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .dfr-color-field label {
-    font-size: 0.85rem;
+    font-size: 13px;
     font-weight: 600;
-    color: #666;
+    color: #1d2327;
 }
 
 .dfr-color-field input[type="color"] {
     width: 100%;
-    height: 40px;
-    border: 2px solid #ddd;
+    height: 36px;
+    border: 1px solid #c3c4c7;
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .dfr-color-field input[type="color"]:hover {
@@ -267,29 +259,32 @@
 }
 
 .dfr-color-value {
-    font-size: 0.75rem;
-    font-family: monospace;
-    color: #666;
+    font-size: 12px;
+    font-family: Consolas,Monaco,monospace;
+    color: #646970;
     text-align: center;
 }
 
 /* === STYLE OPTIONS === */
 .dfr-style-options {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     flex-wrap: wrap;
+    margin-top: 10px;
 }
 
 .dfr-style-options label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 15px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     font-weight: 500;
+    font-size: 13px;
+    background: #fff;
 }
 
 .dfr-style-options label:hover {
@@ -297,32 +292,30 @@
     background: #f0f6fc;
 }
 
-.dfr-style-options input[type="radio"]:checked + span {
-    color: #2271b1;
-}
-
 .dfr-style-options label:has(input[type="radio"]:checked) {
     border-color: #2271b1;
     background: #f0f6fc;
+    color: #2271b1;
 }
 
 /* === CHECKBOX LIST === */
 .dfr-checkbox-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
+    gap: 10px;
     margin-top: 10px;
 }
 
 .dfr-checkbox-list label {
     display: flex;
     align-items: center;
-    padding: 8px 12px;
-    background: #f9f9f9;
-    border: 1px solid #ddd;
+    padding: 8px 10px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    font-size: 13px;
 }
 
 .dfr-checkbox-list label:hover {
@@ -331,22 +324,23 @@
 }
 
 .dfr-checkbox-list input[type="checkbox"] {
-    margin-right: 8px;
+    margin-right: 6px;
 }
 
 /* === INFO BOX === */
 .dfr-info-box {
-    background: #e7f5fe;
-    border-left: 4px solid #2271b1;
-    padding: 15px 20px;
-    margin: 20px 0;
-    border-radius: 4px;
+    background: #f0f6fc;
+    border-left: 4px solid #72aee6;
+    padding: 12px 16px;
+    margin: 15px 0;
+    border-radius: 0 4px 4px 0;
 }
 
 .dfr-info-box p {
-    margin: 8px 0;
-    font-size: 0.95rem;
-    line-height: 1.6;
+    margin: 6px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #1d2327;
 }
 
 .dfr-info-box p:first-child {
@@ -362,57 +356,57 @@
 }
 
 .dfr-info-box ul {
-    margin: 10px 0 0 20px;
-    font-size: 0.9rem;
+    margin: 8px 0 0 18px;
+    font-size: 13px;
+    color: #1d2327;
 }
 
 .dfr-info-box a {
     color: #2271b1;
     text-decoration: none;
-    font-weight: 500;
 }
 
 .dfr-info-box a:hover {
+    color: #135e96;
     text-decoration: underline;
 }
 
 /* === ICON UPLOAD SECTION === */
 .dfr-icons-section {
-    background: #fafafa;
-    padding: 20px;
+    background: #f6f7f7;
+    padding: 15px;
     border-radius: 4px;
+    margin-top: 15px;
 }
 
 .dfr-icon-upload-row {
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 20px;
+    grid-template-columns: 200px 1fr;
+    gap: 15px;
     align-items: center;
-    padding: 20px;
+    padding: 15px;
     background: #fff;
-    border: 1px solid #e0e0e0;
-    margin-bottom: 15px;
+    border: 1px solid #dcdcde;
+    margin-bottom: 10px;
     border-radius: 4px;
-    transition: all 0.3s ease;
 }
 
 .dfr-icon-upload-row:hover {
-    border-color: #2271b1;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-color: #c3c4c7;
 }
 
 .dfr-icon-info strong {
     display: block;
-    margin-bottom: 10px;
-    font-size: 0.95rem;
+    margin-bottom: 8px;
+    font-size: 13px;
     color: #1d2327;
 }
 
 .dfr-icon-preview {
-    margin-top: 10px;
-    padding: 10px;
-    background: #f9f9f9;
-    border: 1px solid #e0e0e0;
+    margin-top: 8px;
+    padding: 8px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
     display: inline-block;
     border-radius: 4px;
 }
@@ -424,96 +418,75 @@
 .dfr-icon-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
 .dfr-icon-actions input[type="file"] {
     flex: 1;
-    min-width: 200px;
-    padding: 8px;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    background: #fff;
-    font-size: 0.85rem;
-}
-
-.dfr-icon-actions .button {
-    white-space: nowrap;
+    min-width: 180px;
+    font-size: 13px;
 }
 
 /* === SHORTCODE PREVIEW === */
 .dfr-shortcode-preview {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
     border-left: 4px solid #C4A35A;
-    padding: 12px 15px;
-    border-radius: 4px;
+    padding: 10px 12px;
+    border-radius: 0 4px 4px 0;
     margin-top: 8px;
 }
 
 .dfr-shortcode-preview code {
-    font-size: 0.95rem;
-    font-family: "Monaco", "Menlo", "Consolas", monospace;
+    font-size: 13px;
+    font-family: Consolas,Monaco,monospace;
     color: #d63384;
     background: none;
 }
 
 /* === DASHBOARD === */
-.dfr-dashboard h1 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 25px;
-}
-
 .dfr-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+    gap: 16px;
+    margin-bottom: 25px;
 }
 
 .dfr-stat-card {
     background: #fff;
-    border: 1px solid #ccd0d4;
-    border-radius: 8px;
-    padding: 25px 20px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
     text-align: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-}
-
-.dfr-stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
 }
 
 .dfr-stat-card.dfr-positive {
-    border-top: 4px solid #51cf66;
+    border-top: 3px solid #51cf66;
 }
 
 .dfr-stat-card.dfr-neutral {
-    border-top: 4px solid #C4A35A;
+    border-top: 3px solid #C4A35A;
 }
 
 .dfr-stat-card.dfr-negative {
-    border-top: 4px solid #ff6b6b;
+    border-top: 3px solid #ff6b6b;
 }
 
 .dfr-stat-value {
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-size: 32px;
+    font-weight: 400;
     color: #1d2327;
     line-height: 1;
     margin-bottom: 8px;
 }
 
 .dfr-stat-label {
-    font-size: 0.9rem;
+    font-size: 13px;
     color: #646970;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.5px;
     font-weight: 500;
 }
 
@@ -521,21 +494,21 @@
 .dfr-charts-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 25px;
-    margin-bottom: 30px;
+    gap: 20px;
+    margin-bottom: 25px;
 }
 
 .dfr-chart-card {
     background: #fff;
-    border: 1px solid #ccd0d4;
-    border-radius: 8px;
-    padding: 25px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
 }
 
 .dfr-chart-card h2 {
-    margin: 0 0 20px;
-    font-size: 1.1rem;
+    margin: 0 0 15px;
+    font-size: 14px;
     font-weight: 600;
     color: #1d2327;
 }
@@ -548,17 +521,19 @@
 /* === TOP POSTS TABLE === */
 .dfr-top-posts {
     background: #fff;
-    border: 1px solid #ccd0d4;
-    border-radius: 8px;
-    padding: 25px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 0;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
 }
 
 .dfr-top-posts h2 {
-    margin: 0 0 20px;
-    font-size: 1.1rem;
+    margin: 0;
+    padding: 15px 20px;
+    font-size: 14px;
     font-weight: 600;
     color: #1d2327;
+    border-bottom: 1px solid #dcdcde;
 }
 
 .dfr-top-posts table {
@@ -568,44 +543,45 @@
 
 .dfr-top-posts thead th {
     background: #f6f7f7;
-    padding: 12px 15px;
+    padding: 10px 12px;
     text-align: left;
     font-weight: 600;
     color: #1d2327;
-    border-bottom: 2px solid #ddd;
-    font-size: 0.9rem;
+    border-bottom: 1px solid #dcdcde;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .dfr-top-posts tbody tr {
-    border-bottom: 1px solid #f0f0f0;
-    transition: background 0.2s ease;
+    border-bottom: 1px solid #f0f0f1;
 }
 
 .dfr-top-posts tbody tr:hover {
-    background: #f9f9f9;
+    background: #f6f7f7;
 }
 
 .dfr-top-posts tbody td {
-    padding: 12px 15px;
-    font-size: 0.9rem;
+    padding: 10px 12px;
+    font-size: 13px;
 }
 
 .dfr-top-posts tbody td a {
     color: #2271b1;
     text-decoration: none;
-    font-weight: 500;
 }
 
 .dfr-top-posts tbody td a:hover {
+    color: #135e96;
     text-decoration: underline;
 }
 
 .dfr-rating-badge {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
+    padding: 3px 8px;
+    border-radius: 10px;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 11px;
 }
 
 .dfr-rating-badge.good {
@@ -625,25 +601,25 @@
 
 /* === META BOX === */
 .dfr-meta-box p {
-    margin: 0 0 12px;
-    font-size: 1.2rem;
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .dfr-meta-box ul {
     margin: 0;
     padding: 0;
     list-style: none;
-    display: grid;
-    gap: 8px;
 }
 
 .dfr-meta-box li {
     display: flex;
     justify-content: space-between;
-    padding: 8px 12px;
-    background: #f9f9f9;
-    border-radius: 4px;
-    font-size: 0.9rem;
+    padding: 6px 8px;
+    background: #f6f7f7;
+    border-radius: 3px;
+    font-size: 13px;
+    margin-bottom: 4px;
 }
 
 /* === RESPONSIVE === */
@@ -654,6 +630,11 @@
 }
 
 @media (max-width: 782px) {
+    .dfr-settings-wrap,
+    .dfr-dashboard {
+        margin: 10px 10px 10px 0;
+    }
+    
     .dfr-theme-selector {
         grid-template-columns: 1fr;
     }
@@ -689,73 +670,12 @@
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
     .dfr-stats-grid {
         grid-template-columns: 1fr;
     }
     
     .dfr-color-row {
         grid-template-columns: 1fr;
-    }
-}
-
-/* === ANIMATIONS === */
-@keyframes dfr-fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.dfr-card,
-.dfr-stat-card,
-.dfr-chart-card {
-    animation: dfr-fade-in 0.4s ease;
-}
-
-/* === DARK MODE === */
-@media (prefers-color-scheme: dark) {
-    .dfr-card,
-    .dfr-stat-card,
-    .dfr-chart-card,
-    .dfr-top-posts {
-        background: #1e1e1e;
-        border-color: #333;
-        color: #e0e0e0;
-    }
-    
-    .dfr-theme-option {
-        background: #2a2a2a;
-        border-color: #444;
-    }
-    
-    .dfr-theme-option.dfr-theme-active {
-        background: #1a3a52;
-    }
-    
-    .dfr-info-box {
-        background: #1a3a52;
-        border-left-color: #2271b1;
-        color: #e0e0e0;
-    }
-    
-    .dfr-icon-upload-row {
-        background: #2a2a2a;
-        border-color: #444;
-    }
-    
-    /* Custom CSS Textarea in Dark Mode */
-    .dfr-field textarea[name="custom_css"] {
-        background: #1e1e1e;
-        color: #d4d4d4;
-        border-color: #444;
-    }
-    
-    .dfr-field textarea[name="custom_css"]::placeholder {
-        color: #6a737d;
     }
 }
