@@ -532,21 +532,6 @@ class Designare_Feedback_Ratings {
     }
 
     public function render_settings_page() {
-        // TEST BUTTON
-        if (isset($_POST['dfr_test_button'])) {
-            echo '<div class="notice notice-success" style="background:green;color:white;padding:20px;margin:20px;font-size:20px;"><p><strong>🎉🎉🎉 ERFOLG! DAS FORM FUNKTIONIERT! 🎉🎉🎉</strong></p></div>';
-        }
-        
-        // DEBUG: Zeige POST-Daten
-        if (!empty($_POST)) {
-            echo '<div class="notice notice-info"><p><strong>DEBUG: POST empfangen</strong></p>';
-            echo '<pre style="font-size:11px;max-height:200px;overflow:auto;">';
-            echo 'dfr_save_settings: ' . (isset($_POST['dfr_save_settings']) ? 'JA' : 'NEIN') . "\n";
-            echo 'dfr_test_button: ' . (isset($_POST['dfr_test_button']) ? 'JA' : 'NEIN') . "\n";
-            echo '_wpnonce: ' . (isset($_POST['_wpnonce']) ? 'JA (' . substr($_POST['_wpnonce'], 0, 10) . '...)' : 'NEIN') . "\n";
-            echo '</pre></div>';
-        }
-        
         // Icon Upload Handler
         if (isset($_POST['dfr_upload_icon'])) {
             check_admin_referer('dfr_upload_icon_nonce');
@@ -585,15 +570,8 @@ class Designare_Feedback_Ratings {
         
         // Settings speichern
         if (isset($_POST['dfr_save_settings'])) {
-            echo '<div class="notice notice-info"><p><strong>DEBUG: dfr_save_settings gefunden!</strong></p></div>';
-            
-            if (!isset($_POST['_wpnonce'])) {
-                echo '<div class="notice notice-error"><p><strong>DEBUG: FEHLER - Kein Nonce gefunden!</strong></p></div>';
-            } elseif (!wp_verify_nonce($_POST['_wpnonce'], 'dfr_settings_nonce')) {
-                echo '<div class="notice notice-error"><p><strong>DEBUG: FEHLER - Nonce ungültig!</strong></p></div>';
+            if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'dfr_settings_nonce')) {
                 wp_die('Sicherheitsprüfung fehlgeschlagen');
-            } else {
-                echo '<div class="notice notice-success"><p><strong>DEBUG: Nonce OK - Speichert jetzt...</strong></p></div>';
             }
             
             $existing_options = get_option('dfr_options', []);
