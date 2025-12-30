@@ -568,7 +568,11 @@ class Designare_Feedback_Ratings {
             }
         }
         
-        if (isset($_POST['dfr_save_settings']) && check_admin_referer('dfr_settings_nonce')) {
+        if (isset($_POST['dfr_save_settings'])) {
+            if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'dfr_settings_nonce')) {
+                wp_die('Sicherheitsprüfung fehlgeschlagen');
+            }
+            
             $existing_options = get_option('dfr_options', []);
             
             $options = [
