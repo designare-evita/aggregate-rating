@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Designare Feedback Ratings
+ * Plugin Name: Feedback Ratings
  * Plugin URI: https://designare.at
  * Description: Sammelt Besucher-Feedback mit 2 Themes (Thumbs & Sterne), Custom Icons und automatischer Schema.org AggregateRating-Generierung für besseres SEO.
  * Version: 2.2.0
