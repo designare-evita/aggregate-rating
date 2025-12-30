@@ -294,9 +294,6 @@ $selected_types = $options['post_types'] ?? ['post'];
             </div>
         </div>
 
-        <!-- DIESEN CODE IN settings-page.php EINFÜGEN -->
-<!-- Direkt nach dem "Design & Farben" Card, VOR "Icons & Grafiken" -->
-
         <!-- Dark Mode -->
         <div class="dfr-card">
             <h2>🌓 Dark Mode</h2>
