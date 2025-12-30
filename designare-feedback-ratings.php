@@ -66,6 +66,7 @@ class Designare_Feedback_Ratings {
     public function activate() {
         $default_options = [
             'rating_theme' => 'thumbs',
+            'widget_theme' => 'light',
             'auto_append' => true,
             'post_types' => ['post'],
             'show_stats_bar' => true,
@@ -572,6 +573,7 @@ class Designare_Feedback_Ratings {
             
             $options = [
                 'rating_theme' => sanitize_text_field($_POST['rating_theme'] ?? 'thumbs'),
+                'widget_theme' => sanitize_text_field($_POST['widget_theme'] ?? 'light'),
                 'auto_append' => isset($_POST['auto_append']),
                 'post_types' => isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : ['post'],
                 'show_stats_bar' => isset($_POST['show_stats_bar']),
