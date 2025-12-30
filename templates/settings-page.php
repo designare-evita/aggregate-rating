@@ -376,8 +376,8 @@ $selected_types = $options['post_types'] ?? ['post'];
                 <p>Die Icon-Upload-Funktion wird gerade überarbeitet und ist vorübergehend nicht verfügbar.</p>
                 <p>Alle anderen Einstellungen funktionieren normal!</p>
             </div>
-            
-            <?php endif; ?>
+        </div>
+
         <!-- Texte & Lokalisierung -->
         <div class="dfr-card">
             <h2>Texte & Lokalisierung</h2>
