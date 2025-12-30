@@ -13,6 +13,15 @@ $selected_types = $options['post_types'] ?? ['post'];
     
     <form method="post" action="">
         <?php wp_nonce_field('dfr_settings_nonce'); ?>
+        
+        <!-- TEST: Dieser Button zeigt ob Form überhaupt funktioniert -->
+        <div style="background:yellow;padding:20px;margin:20px 0;border:3px solid red;">
+            <h2 style="color:red;">🔥 FORM TEST 🔥</h2>
+            <p>Wenn du diesen Button klickst und NICHTS passiert = JavaScript blockiert das Form!</p>
+            <button type="submit" name="dfr_test_button" style="padding:15px 30px;font-size:18px;background:red;color:white;border:none;cursor:pointer;">
+                TEST BUTTON - KLICK MICH!
+            </button>
+        </div>
 
         <!-- Theme Auswahl -->
         <div class="dfr-card">
