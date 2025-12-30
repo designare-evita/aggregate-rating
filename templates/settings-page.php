@@ -265,24 +265,106 @@ $selected_types = $options['post_types'] ?? ['post'];
                     Schema.org AggregateRating generieren
                 </label>
                 <p class="description">
-                    Aktiviert strukturierte Daten (JSON-LD) für Rich Snippets in Google. 
-                    <strong>Kann die Click-Through-Rate um 15-25% steigern.</strong>
+                    Fügt strukturierte Daten (JSON-LD) im Head-Bereich ein. 
+                    <strong>Achtung:</strong> Ob Google Sterne anzeigt, hängt vom gewählten Schema-Typ ab!
                 </p>
             </div>
             
-            <div class="dfr-info-box">
-                <p><strong>Was sind Rich Snippets?</strong></p>
-                <p>Rich Snippets sind erweiterte Suchergebnisse in Google, die zusätzliche Informationen wie Sternebewertungen anzeigen. 
-                Diese werden aus den strukturierten Daten generiert, die dieses Plugin automatisch erstellt.</p>
-                <p><strong>Vorteile:</strong></p>
-                <ul style="margin: 10px 0 0 20px;">
-                    <li>Höhere Sichtbarkeit in Suchergebnissen</li>
-                    <li>Vertrauenssignal für Besucher</li>
-                    <li>Mehr Klicks ohne zusätzlichen SEO-Aufwand</li>
-                </ul>
-                <p style="margin-top: 10px;">
-                    <strong>Tipp:</strong> Teste deine Seite mit dem 
-                    <a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener">Rich Results Test</a>
+            <?php if (!empty($options['enable_schema'])) : ?>
+            <div class="dfr-field" style="margin-top:20px;padding:20px;background:#f9f9f9;border-radius:8px;">
+                <label><strong>Schema-Typ auswählen</strong></label>
+                <select name="schema_type" style="width:100%;max-width:400px;padding:8px;margin-top:10px;">
+                    <option value="Article" <?php selected(($options['schema_type'] ?? 'Article') === 'Article'); ?>>
+                        Article (Standard - ❌ Keine Sterne in Google)
+                    </option>
+                    <option value="BlogPosting" <?php selected(($options['schema_type'] ?? '') === 'BlogPosting'); ?>>
+                        BlogPosting (❌ Keine Sterne in Google)
+                    </option>
+                    <option value="Product" <?php selected(($options['schema_type'] ?? '') === 'Product'); ?>>
+                        Product (✅ Zeigt Sterne in Google)
+                    </option>
+                    <option value="Recipe" <?php selected(($options['schema_type'] ?? '') === 'Recipe'); ?>>
+                        Recipe (✅ Zeigt Sterne in Google)
+                    </option>
+                    <option value="Course" <?php selected(($options['schema_type'] ?? '') === 'Course'); ?>>
+                        Course (✅ Zeigt Sterne in Google)
+                    </option>
+                    <option value="Book" <?php selected(($options['schema_type'] ?? '') === 'Book'); ?>>
+                        Book (✅ Zeigt Sterne in Google)
+                    </option>
+                    <option value="Event" <?php selected(($options['schema_type'] ?? '') === 'Event'); ?>>
+                        Event (✅ Zeigt Sterne in Google)
+                    </option>
+                    <option value="SoftwareApplication" <?php selected(($options['schema_type'] ?? '') === 'SoftwareApplication'); ?>>
+                        SoftwareApplication (✅ Zeigt Sterne in Google)
+                    </option>
+                    <option value="HowTo" <?php selected(($options['schema_type'] ?? '') === 'HowTo'); ?>>
+                        HowTo (✅ Zeigt Sterne in Google)
+                    </option>
+                    <option value="LocalBusiness" <?php selected(($options['schema_type'] ?? '') === 'LocalBusiness'); ?>>
+                        LocalBusiness (✅ Zeigt Sterne in Google - mit Einschränkungen)
+                    </option>
+                </select>
+                
+                <div class="dfr-info-box" style="background:#fff3cd;border-left-color:#ff6b6b;margin-top:20px;">
+                    <p><strong>⚠️ WICHTIG: Wann zeigt Google Bewertungssterne?</strong></p>
+                    
+                    <p style="margin-top:15px;"><strong>✅ STERNE WERDEN ANGEZEIGT bei:</strong></p>
+                    <ul style="margin: 5px 0 0 20px;">
+                        <li><strong>Product</strong> - Produktbewertungen</li>
+                        <li><strong>Recipe</strong> - Rezeptbewertungen</li>
+                        <li><strong>Course</strong> - Online-Kurse</li>
+                        <li><strong>Book</strong> - Buchrezensionen</li>
+                        <li><strong>Event</strong> - Veranstaltungen</li>
+                        <li><strong>SoftwareApplication</strong> - Software/Apps</li>
+                        <li><strong>HowTo</strong> - Anleitungen</li>
+                        <li><strong>LocalBusiness</strong> - Lokale Unternehmen (nur mit externen Reviews!)</li>
+                    </ul>
+                    
+                    <p style="margin-top:15px;"><strong>❌ KEINE STERNE bei:</strong></p>
+                    <ul style="margin: 5px 0 0 20px;">
+                        <li><strong>Article</strong> - Standard-Blogartikel</li>
+                        <li><strong>BlogPosting</strong> - Blog-Posts</li>
+                        <li><strong>NewsArticle</strong> - News-Artikel</li>
+                        <li><strong>WebPage</strong> - Normale Webseiten</li>
+                    </ul>
+                    
+                    <p style="margin-top:15px;"><strong>Warum?</strong></p>
+                    <p>Google erlaubt <strong>keine "selbstbezogenen" Bewertungen</strong>. 
+                    Eine Website darf sich nicht selbst bewerten. Dies verhindert Missbrauch und Manipulation.</p>
+                    
+                    <p style="margin-top:15px;"><strong>Für Blog-Artikel gilt:</strong></p>
+                    <p>Wenn du über ein <strong>Produkt schreibst</strong> (z.B. Produkttest), 
+                    verwende den Typ <strong>"Product"</strong> statt "Article". 
+                    Dann bewertest du das Produkt, nicht deinen Artikel.</p>
+                </div>
+                
+                <div class="dfr-info-box" style="background:#e7f3ff;border-left-color:#2196F3;margin-top:15px;">
+                    <p><strong>💡 Was passiert mit Article/BlogPosting?</strong></p>
+                    <ul style="margin: 10px 0 0 20px;">
+                        <li>✅ <strong>Keine Strafe</strong> - Kein negatives Ranking</li>
+                        <li>⚠️ <strong>Wird ignoriert</strong> - Google zeigt einfach keine Sterne</li>
+                        <li>📊 <strong>Andere Suchmaschinen</strong> - Bing, Yandex nutzen es evtl.</li>
+                        <li>✅ <strong>Technisch korrekt</strong> - Validiert im Rich Results Test</li>
+                    </ul>
+                </div>
+            </div>
+            <?php endif; ?>
+            
+            <div class="dfr-info-box" style="margin-top:20px;">
+                <p><strong>🔍 Teste deine Seite:</strong></p>
+                <p style="margin-top:10px;">
+                    <a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener" class="button" style="margin-right:10px;">
+                        📊 Google Rich Results Test
+                    </a>
+                    <a href="https://validator.schema.org/" target="_blank" rel="noopener" class="button">
+                        ✓ Schema.org Validator
+                    </a>
+                </p>
+                <p style="margin-top:10px;font-size:0.9rem;color:#666;">
+                    Der Rich Results Test zeigt dir, ob Google die Sterne anzeigen <strong>kann</strong>. 
+                    Die tatsächliche Anzeige hängt aber auch von anderen Faktoren ab 
+                    (Qualität, Traffic, Domain Authority, etc.)
                 </p>
             </div>
         </div>
