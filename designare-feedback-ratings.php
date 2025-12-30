@@ -534,37 +534,42 @@ class Designare_Feedback_Ratings {
     public function render_settings_page() {
         // Icon Upload Handler
         if (isset($_POST['dfr_upload_icon'])) {
-            check_admin_referer('dfr_upload_icon_nonce');
-            
-            if (!empty($_FILES['dfr_icon_file']['name'])) {
-                $icon_type = sanitize_text_field($_POST['icon_type']);
-                $uploaded = $this->handle_icon_upload($_FILES['dfr_icon_file'], $icon_type);
-                
-                if ($uploaded['success']) {
-                    $options = get_option('dfr_options', []);
-                    $options[$icon_type] = $uploaded['url'];
-                    update_option('dfr_options', $options);
-                    echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Icon hochgeladen!</strong></p></div>';
-                } else {
-                    echo '<div class="notice notice-error is-dismissible"><p><strong>✗ Fehler:</strong> ' . esc_html($uploaded['error']) . '</p></div>';
+            if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'dfr_upload_icon_nonce')) {
+                echo '<div class="notice notice-error is-dismissible"><p><strong>✗ Sicherheitsprüfung fehlgeschlagen</strong></p></div>';
+            } else {
+                if (!empty($_FILES['dfr_icon_file']['name'])) {
+                    $icon_type = sanitize_text_field($_POST['icon_type']);
+                    $uploaded = $this->handle_icon_upload($_FILES['dfr_icon_file'], $icon_type);
+                    
+                    if ($uploaded['success']) {
+                        $options = get_option('dfr_options', []);
+                        $options[$icon_type] = $uploaded['url'];
+                        update_option('dfr_options', $options);
+                        echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Icon hochgeladen!</strong></p></div>';
+                    } else {
+                        echo '<div class="notice notice-error is-dismissible"><p><strong>✗ Fehler:</strong> ' . esc_html($uploaded['error']) . '</p></div>';
+                    }
                 }
             }
         }
         
         // Icon löschen
         if (isset($_POST['dfr_delete_icon'])) {
-            check_admin_referer('dfr_delete_icon_nonce');
-            $icon_type = sanitize_text_field($_POST['icon_type']);
-            $options = get_option('dfr_options', []);
-            
-            if (!empty($options[$icon_type])) {
-                $attachment_id = attachment_url_to_postid($options[$icon_type]);
-                if ($attachment_id) {
-                    wp_delete_attachment($attachment_id, true);
+            if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'dfr_delete_icon_nonce')) {
+                echo '<div class="notice notice-error is-dismissible"><p><strong>✗ Sicherheitsprüfung fehlgeschlagen</strong></p></div>';
+            } else {
+                $icon_type = sanitize_text_field($_POST['icon_type']);
+                $options = get_option('dfr_options', []);
+                
+                if (!empty($options[$icon_type])) {
+                    $attachment_id = attachment_url_to_postid($options[$icon_type]);
+                    if ($attachment_id) {
+                        wp_delete_attachment($attachment_id, true);
+                    }
+                    $options[$icon_type] = '';
+                    update_option('dfr_options', $options);
+                    echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Icon gelöscht!</strong></p></div>';
                 }
-                $options[$icon_type] = '';
-                update_option('dfr_options', $options);
-                echo '<div class="notice notice-success is-dismissible"><p><strong>✓ Icon gelöscht!</strong></p></div>';
             }
         }
         
