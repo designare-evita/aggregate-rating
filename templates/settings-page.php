@@ -11,7 +11,7 @@ $selected_types = $options['post_types'] ?? ['post'];
         Einstellungen
     </h1>
     
-    <form method="post">
+    <form method="post" action="">
         <?php wp_nonce_field('dfr_settings_nonce'); ?>
 
         <!-- Theme Auswahl -->
