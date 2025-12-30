@@ -4,11 +4,20 @@ $options = get_option('dfr_options', []);
 $show_stats = filter_var($atts['show_stats'] ?? true, FILTER_VALIDATE_BOOLEAN);
 $show_share = filter_var($atts['show_share'] ?? true, FILTER_VALIDATE_BOOLEAN);
 
+// Dark Mode Klasse
+$widget_theme = $options['widget_theme'] ?? 'light';
+$theme_class = '';
+if ($widget_theme === 'dark') {
+    $theme_class = ' dfr-dark-mode';
+} elseif ($widget_theme === 'auto') {
+    $theme_class = ' dfr-auto-dark';
+}
+
 // Icons bestimmen
 $use_custom = !empty($options['use_custom_icons']);
 $icon_size = $options['icon_size'] ?? 24;
 ?>
-<aside class="dfr-feedback-section" data-post-id="<?php echo esc_attr($post_id); ?>">
+<aside class="dfr-feedback-section<?php echo $theme_class; ?>" data-post-id="<?php echo esc_attr($post_id); ?>">
     <div class="dfr-feedback-container">
         <p class="dfr-feedback-title"><?php echo esc_html($options['text_title'] ?? 'War dieser Artikel hilfreich?'); ?></p>
         
