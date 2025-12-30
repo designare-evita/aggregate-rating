@@ -135,7 +135,7 @@ $selected_types = $options['post_types'] ?? ['post'];
             </div>
             
             <div class="dfr-info-box">
-                <p><strong>📊 Was sind Rich Snippets?</strong></p>
+                <p><strong>Was sind Rich Snippets?</strong></p>
                 <p>Rich Snippets sind erweiterte Suchergebnisse in Google, die zusätzliche Informationen wie Sternebewertungen anzeigen. 
                 Diese werden aus den strukturierten Daten generiert, die dieses Plugin automatisch erstellt.</p>
                 <p><strong>Vorteile:</strong></p>
@@ -293,6 +293,52 @@ $selected_types = $options['post_types'] ?? ['post'];
                 </div>
             </div>
         </div>
+
+        <!-- DIESEN CODE IN settings-page.php EINFÜGEN -->
+<!-- Direkt nach dem "Design & Farben" Card, VOR "Icons & Grafiken" -->
+
+        <!-- Dark Mode -->
+        <div class="dfr-card">
+            <h2>🌓 Dark Mode</h2>
+            
+            <div class="dfr-field">
+                <label>Widget-Theme</label>
+                <div class="dfr-style-options">
+                    <label>
+                        <input type="radio" name="widget_theme" value="light" 
+                               <?php checked(($options['widget_theme'] ?? 'light') === 'light'); ?>>
+                        <span>☀️ Hell (Standard)</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="widget_theme" value="dark" 
+                               <?php checked(($options['widget_theme'] ?? '') === 'dark'); ?>>
+                        <span>🌙 Dunkel</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="widget_theme" value="auto" 
+                               <?php checked(($options['widget_theme'] ?? '') === 'auto'); ?>>
+                        <span>🔄 Automatisch (System-Einstellung)</span>
+                    </label>
+                </div>
+                <p class="description">
+                    <strong>Hell:</strong> Widget hat immer hellen Hintergrund<br>
+                    <strong>Dunkel:</strong> Widget hat immer dunklen Hintergrund<br>
+                    <strong>Automatisch:</strong> Passt sich an die System-Einstellung des Besuchers an (Dark Mode)
+                </p>
+            </div>
+            
+            <div class="dfr-info-box" style="background:#2c3338;border-left-color:#C4A35A;color:#e0e0e0;margin-top:20px;">
+                <p style="color:#fff;"><strong>💡 Dark Mode Vorschau</strong></p>
+                <p style="color:#ddd;">
+                    Im Dark Mode werden folgende Farben verwendet:<br>
+                    • Hintergrund: Dunkelgrau (#1e1e1e)<br>
+                    • Text: Hellgrau (#e0e0e0)<br>
+                    • Buttons: Dunkler mit farbigen Hover-Effekten<br>
+                    • Deine gewählten Akzentfarben bleiben erhalten
+                </p>
+            </div>
+        </div>
+        
 
         <!-- Icons & Grafiken -->
         <div class="dfr-card">
