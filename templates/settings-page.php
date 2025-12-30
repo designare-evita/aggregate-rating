@@ -11,17 +11,11 @@ $selected_types = $options['post_types'] ?? ['post'];
         Einstellungen
     </h1>
     
+    <!-- HINWEIS: Icon-Uploads werden vorläufig deaktiviert um Form-Problem zu beheben -->
+    <!-- Sie können nach dem Fix wieder eingefügt werden -->
+    
     <form method="post" action="">
         <?php wp_nonce_field('dfr_settings_nonce'); ?>
-        
-        <!-- TEST: Dieser Button zeigt ob Form überhaupt funktioniert -->
-        <div style="background:yellow;padding:20px;margin:20px 0;border:3px solid red;">
-            <h2 style="color:red;">🔥 FORM TEST 🔥</h2>
-            <p>Wenn du diesen Button klickst und NICHTS passiert = JavaScript blockiert das Form!</p>
-            <button type="submit" name="dfr_test_button" style="padding:15px 30px;font-size:18px;background:red;color:white;border:none;cursor:pointer;">
-                TEST BUTTON - KLICK MICH!
-            </button>
-        </div>
 
         <!-- Theme Auswahl -->
         <div class="dfr-card">
@@ -371,131 +365,19 @@ $selected_types = $options['post_types'] ?? ['post'];
                 <p class="description">Standard: 24px. Empfohlen: 16-48px</p>
             </div>
             
-            <?php if (!empty($options['use_custom_icons'])) : ?>
+            <!-- ICON UPLOADS VORLÄUFIG DEAKTIVIERT -->
+            <!-- Problem: Nested Forms (Forms innerhalb von Forms) sind illegal in HTML -->
+            <!-- Diese Sektion muss umgebaut werden - Icon Uploads müssen außerhalb des Haupt-Forms sein -->
+            <!-- Für jetzt: Bitte Icon-Einstellung oben aktivieren, dann die Icons manuell via Media Library hochladen -->
+            <!-- und die URLs in der Datenbank speichern -->
             
-            <div class="dfr-info-box" style="background:#fff3cd;border-left-color:#ffc107;margin:20px 0;">
-                <p><strong>💡 Icon-Tipps:</strong></p>
-                <ul style="margin:10px 0 0 20px;">
-                    <li><strong>SVG</strong> - Empfohlen! Skaliert perfekt, kleine Dateigröße</li>
-                    <li><strong>PNG</strong> - Mit transparentem Hintergrund, 2x Größe für Retina</li>
-                    <li><strong>Optimierung</strong> - Nutze Tools wie SVGOMG oder TinyPNG</li>
-                    <li><strong>Farbig oder Monochrom</strong> - Bei Monochrom färbt CSS automatisch ein</li>
-                </ul>
-            </div>
-            
-            <!-- Thumbs Icons -->
-            <div class="dfr-icons-section" style="margin-top:30px;padding-top:30px;border-top:2px solid #f0f0f0;">
-                <h3 style="margin:0 0 20px;font-size:0.95rem;color:#666;text-transform:uppercase;letter-spacing:0.05em;">
-                    👍 Thumbs-System Icons
-                </h3>
-                
-                <?php 
-                $thumbs_icons = [
-                    'icon_positive' => ['label' => 'Positiv (Daumen hoch)', 'emoji' => '👍'],
-                    'icon_neutral' => ['label' => 'Neutral (Horizontal)', 'emoji' => '😐'],
-                    'icon_negative' => ['label' => 'Negativ (Daumen runter)', 'emoji' => '👎']
-                ];
-                
-                foreach ($thumbs_icons as $icon_key => $icon_data) :
-                    $current_icon = $options[$icon_key] ?? '';
-                ?>
-                <div class="dfr-icon-upload-row">
-                    <div class="dfr-icon-info">
-                        <strong><?php echo $icon_data['emoji']; ?> <?php echo esc_html($icon_data['label']); ?></strong>
-                        <?php if ($current_icon) : ?>
-                            <div class="dfr-icon-preview">
-                                <img src="<?php echo esc_url($current_icon); ?>" alt="<?php echo esc_attr($icon_data['label']); ?>" style="max-width:48px;max-height:48px;">
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="dfr-icon-actions">
-                        <form method="post" enctype="multipart/form-data" style="display:inline-block;">
-                            <?php wp_nonce_field('dfr_upload_icon_nonce'); ?>
-                            <input type="hidden" name="icon_type" value="<?php echo esc_attr($icon_key); ?>">
-                            <input type="file" name="dfr_icon_file" accept=".svg,.png,.jpg,.jpeg,.gif,.webp" required style="font-size:0.85rem;">
-                            <button type="submit" name="dfr_upload_icon" class="button">
-                                <?php echo $current_icon ? 'Ersetzen' : 'Hochladen'; ?>
-                            </button>
-                        </form>
-                        
-                        <?php if ($current_icon) : ?>
-                        <form method="post" style="display:inline-block;margin-left:10px;">
-                            <?php wp_nonce_field('dfr_delete_icon_nonce'); ?>
-                            <input type="hidden" name="icon_type" value="<?php echo esc_attr($icon_key); ?>">
-                            <button type="submit" name="dfr_delete_icon" class="button" onclick="return confirm('Icon wirklich löschen?');">
-                                Löschen
-                            </button>
-                        </form>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            
-            <!-- Sterne Icons -->
-            <div class="dfr-icons-section" style="margin-top:30px;padding-top:30px;border-top:2px solid #f0f0f0;">
-                <h3 style="margin:0 0 20px;font-size:0.95rem;color:#666;text-transform:uppercase;letter-spacing:0.05em;">
-                    ⭐ Sterne-System Icons
-                </h3>
-                
-                <?php 
-                $star_icons = [
-                    'icon_star_empty' => ['label' => 'Stern (Leer)', 'emoji' => '☆'],
-                    'icon_star_filled' => ['label' => 'Stern (Gefüllt)', 'emoji' => '★']
-                ];
-                
-                foreach ($star_icons as $icon_key => $icon_data) :
-                    $current_icon = $options[$icon_key] ?? '';
-                ?>
-                <div class="dfr-icon-upload-row">
-                    <div class="dfr-icon-info">
-                        <strong><?php echo $icon_data['emoji']; ?> <?php echo esc_html($icon_data['label']); ?></strong>
-                        <?php if ($current_icon) : ?>
-                            <div class="dfr-icon-preview">
-                                <img src="<?php echo esc_url($current_icon); ?>" alt="<?php echo esc_attr($icon_data['label']); ?>" style="max-width:48px;max-height:48px;">
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="dfr-icon-actions">
-                        <form method="post" enctype="multipart/form-data" style="display:inline-block;">
-                            <?php wp_nonce_field('dfr_upload_icon_nonce'); ?>
-                            <input type="hidden" name="icon_type" value="<?php echo esc_attr($icon_key); ?>">
-                            <input type="file" name="dfr_icon_file" accept=".svg,.png,.jpg,.jpeg,.gif,.webp" required style="font-size:0.85rem;">
-                            <button type="submit" name="dfr_upload_icon" class="button">
-                                <?php echo $current_icon ? 'Ersetzen' : 'Hochladen'; ?>
-                            </button>
-                        </form>
-                        
-                        <?php if ($current_icon) : ?>
-                        <form method="post" style="display:inline-block;margin-left:10px;">
-                            <?php wp_nonce_field('dfr_delete_icon_nonce'); ?>
-                            <input type="hidden" name="icon_type" value="<?php echo esc_attr($icon_key); ?>">
-                            <button type="submit" name="dfr_delete_icon" class="button" onclick="return confirm('Icon wirklich löschen?');">
-                                Löschen
-                            </button>
-                        </form>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            
-            <div class="dfr-info-box" style="margin-top:30px;">
-                <p><strong>🎨 Empfohlene Icon-Quellen:</strong></p>
-                <ul style="margin:10px 0 0 20px;font-size:0.9rem;">
-                    <li><strong>Heroicons</strong> - https://heroicons.com (MIT License)</li>
-                    <li><strong>Feather Icons</strong> - https://feathericons.com (MIT License)</li>
-                    <li><strong>Font Awesome</strong> - https://fontawesome.com (Free Icons)</li>
-                    <li><strong>Flaticon</strong> - https://flaticon.com (Attribution erforderlich)</li>
-                    <li><strong>Iconfinder</strong> - https://iconfinder.com (Verschiedene Lizenzen)</li>
-                </ul>
+            <div class="dfr-info-box" style="background:#fff3cd;border-left-color:#ffc107;">
+                <p><strong>⚠️ Icon-Upload temporär deaktiviert</strong></p>
+                <p>Die Icon-Upload-Funktion wird gerade überarbeitet und ist vorübergehend nicht verfügbar.</p>
+                <p>Alle anderen Einstellungen funktionieren normal!</p>
             </div>
             
             <?php endif; ?>
-        </div>
-
         <!-- Texte & Lokalisierung -->
         <div class="dfr-card">
             <h2>Texte & Lokalisierung</h2>
